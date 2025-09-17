@@ -27,20 +27,20 @@ class SMC(object):
         logname = __name__.rsplit(".", 1)[-1]
         self.logger = logging.getLogger(logname)
         self.logger.setLevel(logging.DEBUG)
-        log_handler = logging.FileHandler(logname + ".log")
-        formatter = logging.Formatter(
-            "%(asctime)s--%(name)s--%(levelname)s--%(module)s--"
-            "%(funcName)s--%(message)s")
-        log_handler.setFormatter(formatter)
-        self.logger.addHandler(log_handler)
-
+        if log:
+            self.logger.addHandler(FileHandler)
+            log_handler = logging.FileHandler(logname + ".log")
+            formatter = logging.Formatter(
+                "%(asctime)s--%(name)s--%(levelname)s--%(module)s--"
+                "%(funcName)s--%(message)s")
+            log_handler.setFormatter(formatter)
+            self.logger.addHandler(log_handler)
+        # Console handler for real-time output
         console_handler = logging.StreamHandler()
         console_formatter = logging.Formatter("%(asctime)s--%(message)s")
         console_handler.setFormatter(console_formatter)
         self.logger.addHandler(console_handler)
-        if log:
-            self.logger.addHandler(FileHandler)
-
+        
 
         self.logger.info("Logger initialized for SMC8 Stage")
 
