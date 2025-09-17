@@ -24,25 +24,25 @@ class SMC(object):
             - full device capabilities will be under "self.device.<functions()>"
         '''
         # Logger setup
+        logname = __name__.rsplit(".", 1)[-1]
+        self.logger = logging.getLogger(logname)
+        self.logger.setLevel(logging.DEBUG)
+        log_handler = logging.FileHandler(logname + ".log")
+        formatter = logging.Formatter(
+            "%(asctime)s--%(name)s--%(levelname)s--%(module)s--"
+            "%(funcName)s--%(message)s")
+        log_handler.setFormatter(formatter)
+        self.logger.addHandler(log_handler)
+
+        console_handler = logging.StreamHandler()
+        console_formatter = logging.Formatter("%(asctime)s--%(message)s")
+        console_handler.setFormatter(console_formatter)
+        self.logger.addHandler(console_handler)
         if log:
-            logname = __name__.rsplit(".", 1)[-1]
-            self.logger = logging.getLogger(logname)
-            self.logger.setLevel(logging.DEBUG)
-            log_handler = logging.FileHandler(logname + ".log")
-            formatter = logging.Formatter(
-                "%(asctime)s--%(name)s--%(levelname)s--%(module)s--"
-                "%(funcName)s--%(message)s")
-            log_handler.setFormatter(formatter)
-            self.logger.addHandler(log_handler)
+            self.logger.addHandler(FileHandler)
 
-            console_handler = logging.StreamHandler()
-            console_formatter = logging.Formatter("%(asctime)s--%(message)s")
-            console_handler.setFormatter(console_formatter)
-            self.logger.addHandler(console_handler)
 
-            self.logger.info("Logger initialized for SMC8 Stage")
-        else:
-            self.logger = None
+        self.logger.info("Logger initialized for SMC8 Stage")
 
         #Inicialize variables and objects
         # get coms
@@ -63,10 +63,7 @@ class SMC(object):
         #Check if already open
         if self.dev_open:
             #log that device is already open
-            if self.logger is not None:
-                self.logger.info("Device already open, skipping open command.")
-            else:
-                print("Device already open, skipping open command.")
+            self.logger.info("Device already open, skipping open command.")
             #return true if already open
             return True
         
@@ -83,20 +80,15 @@ class SMC(object):
             self.min_limit = self.limits.MinLimit
             self.max_limit = self.limits.MaxLimit
 
-            if self.logger is not None:#Log that device is open
-                self.logger.info("Device opened successfully.")
-            else:
-                print("Device opened successfully.")
+            self.logger.info("Device opened successfully.")
 
             #return true if successful
             self.dev_open = True
             return True
         except Exception as e:
             #log error
-            if self.logger is not None:
-                self.logger.error("Error opening device: %s", str(e))
-            else:
-                print("Error opening device: %s", str(e))
+            self.logger.error("Error opening device: %s", str(e))
+            
             #return false if unsuccessful
             self.dev_open = False
             return False
@@ -110,10 +102,8 @@ class SMC(object):
         #Check if already open
         if not self.dev_open:
             #log that de is closed
-            if self.logger is not None:
-                self.logger.info("Device already closed, skipping close command.")
-            else:
-                print("Device already closed, skipping close command.")
+            self.logger.info("Device already closed, skipping close command.")
+            
             #return true if already closed
             return True
 
@@ -121,19 +111,14 @@ class SMC(object):
         try:
             self.axis.close_device()
             self.dev_open = False
-            if self.logger is not None:
-                self.logger.info("Device closed successfully.")
-            else:
-                print("Device closed successfully.")
+            self.logger.info("Device closed successfully.")
             #return true if succesful
             return True
         except Exception as e:
         #catch error
             #log error and return false
-            if self.logger is not None:
-                self.logger.error("Error closing device: %s", str(e))
-            else:
-                print("Error closing device: %s", str(e))
+            self.logger.error("Error closing device: %s", str(e))
+            
             #return false if unsuccessful
             self.dev_open = True
             return False
@@ -151,10 +136,7 @@ class SMC(object):
         #Check if connection not open
         if not self.dev_open:
             #log closed connection
-            if self.logger is not None:
-                self.logger.error("Device not open, cannot get info.")
-            else:
-                print("Device not open, cannot get info.")
+            self.logger.error("Device not open, cannot get info.")
             return False
 
         #Try to get info
@@ -168,29 +150,18 @@ class SMC(object):
             #get device information
             self.device_information = self.axis.get_device_information()
 
-            if self.logger is not None:#Log that device is open
-                self.logger.info("Device opened successfully.")
-                self.logger.info("Serial number: %s", self.serial_number)
-                self.logger.info("Power setting: %s", self.power_setting)
-                self.logger.info("Command read settings: %s", self.command_read_setting)
-                #Log device information
-                self.logger.info("Device information: %s", self.device_information)
-            else:
-                print("Device opened successfully.")
-                print("Serial number: %s", self.serial_number)
-                print("Power setting: %s", self.power_setting)
-                print("Command read settings: %s", self.command_read_setting)
-                #Log device information
-                print("Device information: %s", self.device_information)
+            self.logger.info("Device opened successfully.")
+            self.logger.info("Serial number: %s", self.serial_number)
+            self.logger.info("Power setting: %s", self.power_setting)
+            self.logger.info("Command read settings: %s", self.command_read_setting)
+            #Log device information
+            self.logger.info("Device information: %s", self.device_information)
 
             #return true if successful
             return True
         except Exception as e:
             #log error and return None
-            if self.logger is not None:
-                self.logger.error("Error getting device information: %s", str(e))
-            else:
-                print("Error getting device information: %s", str(e))
+            self.logger.error("Error getting device information: %s", str(e))
             return False
 
     def reference(self):
@@ -205,10 +176,7 @@ class SMC(object):
         #Check if connection not open
         if not self.dev_open:
             #log closed connection
-            if self.logger is not None:
-                self.logger.error("Device not open, cannot reference stage.")
-            else:
-                print("Device not open, cannot reference stage.")
+            self.logger.error("Device not open, cannot reference stage.")
             return False
 
         #try reference
@@ -233,10 +201,7 @@ class SMC(object):
         #Check if connection not open
         if not self.dev_open:
             #log closed connection
-            if self.logger is not None:
-                self.logger.error("Device not open, cannot home stage.")
-            else:
-                print("Device not open, cannot home stage.")
+            self.logger.error("Device not open, cannot home stage.")
             return False
 
         #Try to home to zero or parked position
@@ -245,19 +210,13 @@ class SMC(object):
             self.axis.command_wait_for_stop(100)
             #Check position after homing
             position = self.axis.get_position()
-            if self.logger is not None:
-                self.logger.info("Stage homed to position: %s", position.Position)   
-            else:
-                print("Stage homed to position: %s", position.Position)
+            self.logger.info("Stage homed to position: %s", position.Position)   
             #return true if succesful
             return True
         #catch error  
         except Exception as e:
             #log error
-            if self.logger is not None:
-                self.logger.error("Error homing stage: %s", str(e))
-            else:
-                print("Error homing stage: %s", str(e))
+            self.logger.error("Error homing stage: %s", str(e))
             #return false if unsuccessful
             return False
 
@@ -273,20 +232,14 @@ class SMC(object):
         #Check if connection not open
         if not self.dev_open:
             #log closed connection
-            if self.logger is not None:
-                self.logger.error("Device not open, cannot move stage.")
-            else:
-                print("Device not open, cannot move stage.")
+            self.logger.error("Device not open, cannot move stage.")
             return False
 
         #Try move absolute
         try:
             #check limits/valid inputs
             if position < self.min_limit or position > self.max_limit:
-                if self.logger is not None:
-                    self.logger.error("Position out of limits: %s", position)
-                else:
-                    print("Position out of limits: %s", position)
+                self.logger.error("Position out of limits: %s", position)
                 return False
             #move absolute
             self.axis.command_move_calb(position)
@@ -295,25 +248,16 @@ class SMC(object):
             #after move is done, check position
             position = self.axis.get_position_calb()
             if position.Error != 0:
-                if self.logger is not None:
-                    self.logger.error("Error moving stage: %s", position.Error)
-                else:
-                    print("Error moving stage: %s", position.Error)
+                self.logger.error("Error moving stage: %s", position.Error)
                 return False
             else: 
-                if self.logger is not None:
-                    self.logger.info("Stage moved to position: %s", position.Position)
-                else:
-                    print("Stage moved to position: %s", position.Position)
+                self.logger.info("Stage moved to position: %s", position.Position)
                 #return true if succesful
                 return True
         #catch error
         except Exception as e:
             #log error and return false
-            if self.logger is not None:
-                self.logger.error("Error moving stage: %s", str(e))
-            else:
-                print("Error moving stage: %s", str(e))
+            self.logger.error("Error moving stage: %s", str(e))
             return False
 
     def move_rel(self, position:float):
@@ -328,10 +272,7 @@ class SMC(object):
         #Check if connection not open
         if not self.dev_open:
             #log closed connection
-            if self.logger is not None:
-                self.logger.error("Device not open, cannot move stage.")
-            else:
-                print("Device not open, cannot move stage.")
+            self.logger.error("Device not open, cannot move stage.")
             return False
 
         #Try move relative
@@ -343,10 +284,7 @@ class SMC(object):
             position = current_position + position
             #check if new position is within limits
             if position < self.min_limit or position > self.max_limit:
-                if self.logger is not None:
-                    self.logger.error("Position out of limits: %s", position)
-                else:
-                    print("Position out of limits: %s", position)
+                self.logger.error("Position out of limits: %s", position)
                 return False
             #move relative
             self.axis.command_movr_calb(position)
@@ -355,25 +293,16 @@ class SMC(object):
             #after move is done, check position
             position = self.axis.get_position_calb()
             if position.Error != 0:
-                if self.logger is not None:
-                    self.logger.error("Error moving stage: %s", position.Error)
-                else:
-                    print("Error moving stage: %s", position.Error)
+                self.logger.error("Error moving stage: %s", position.Error)
                 return False
             else: 
-                if self.logger is not None:
-                    self.logger.info("Stage moved to position: %s", position.Position)
-                else:
-                    print("Stage moved to position: %s", position.Position)
+                self.logger.info("Stage moved to position: %s", position.Position)
                 #return true if succesful
                 return True
         #catch error
         except Exception as e:
             #log error and return false
-            if self.logger is not None:
-                self.logger.error("Error moving stage: %s", str(e))
-            else:
-                print("Error moving stage: %s", str(e))
+            self.logger.error("Error moving stage: %s", str(e))
             return False
 
     def get_position(self):
@@ -385,10 +314,7 @@ class SMC(object):
         #Check if connection not open
         if not self.dev_open:
             #log closed connection
-            if self.logger is not None:
-                self.logger.error("Device not open, cannot get position.")
-            else:
-                print("Device not open, cannot get position.")
+            self.logger.error("Device not open, cannot get position.")
             return False
 
         #Try get_position
@@ -399,18 +325,12 @@ class SMC(object):
             position_string = f"Position: {position.Position}, " \
                               f"Error: {position.Error}, " \
                               f"Moving: {position.Moving}"
-            if self.logger is not None:
-                self.logger.info(position_string)
-            else:
-                print(position_string)
+            self.logger.info(position_string)
             return position.Position, position_string
         #catch error
         except Exception as e:
             #log error and return None
-            if self.logger is not None:
-                self.logger.error("Error getting position: %s", str(e))
-            else:
-                print("Error getting position: %s", str(e))
+            self.logger.error("Error getting position: %s", str(e))
             return None
 
     def status(self):
@@ -423,10 +343,7 @@ class SMC(object):
         #Check if connection not open
         if not self.dev_open:
             #log closed connection
-            if self.logger is not None:
-                self.logger.error("Device not open, cannot get status.")
-            else:
-                print("Device not open, cannot get status.")
+            self.logger.error("Device not open, cannot get status.")
             return False
 
         #Try status function    
@@ -437,18 +354,12 @@ class SMC(object):
             status_string = f"Status: {status.Status}, Position: {status.Position}, " \
                             f"Error: {status.Error}, Moving: {status.Moving}"
             #return status in user friendly way
-            if self.logger is not None:
-                self.logger.info(status_string)
-            else:
-                print(status_string)
+            self.logger.info(status_string)
             return status_string
         #catch error
         except Exception as e:
             #log error and return false
-            if self.logger is not None:
-                self.logger.error("Error getting status: %s", str(e))
-            else:
-                print("Error getting status: %s", str(e))
+            self.logger.error("Error getting status: %s", str(e))
             return None
 
     def halt(self):
@@ -461,10 +372,7 @@ class SMC(object):
         #Check if connection not open
         if not self.dev_open:
             #log closed connection
-            if self.logger is not None:
-                self.logger.error("Device not open, cannot halt stage.")
-            else:
-                print("Device not open, cannot halt stage.")
+            self.logger.error("Device not open, cannot halt stage.")
             return False
 
         #Try imidiate stop of stage
@@ -474,17 +382,11 @@ class SMC(object):
             status = self.axis.get_status_calb()
             #TODO:: Finish the halt check
             #status.Moving
-            if self.logger is not None:
-                self.logger.info("Stage halted successfully.")
-            else:
-                print("Stage halted successfully.")
+            self.logger.info("Stage halted successfully.")
             #return true if succesful
             return True
         #catch error
         except Exception as e:
             #log error and return false
-            if self.logger is not None:
-                self.logger.error("Error halting stage: %s", str(e))
-            else:
-                print("Error halting stage: %s", str(e))
+            self.logger.error("Error halting stage: %s", str(e))
             return False
