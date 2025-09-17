@@ -3,7 +3,7 @@
 #                       -Elijah Anakalea-Buckley
 
 import libximc.highlevel as ximc
-from hispec.util.helper import logger_utils
+import logging
 
 
 
@@ -23,13 +23,24 @@ class SMC(object):
             parameters: ip string, port integer, logging bool
             - full device capabilities will be under "self.device.<functions()>"
         '''
-        #Start Logger
+        # Logger setup
         if log:
-            if logfile is None:
-                logfile = __name__.rsplit(".", 1)[-1] + ".log"
-            self.logger = logger_utils.setup_logger(__name__, log_file=logfile)
-            if quiet:
-                self.logger.setLevel(logging.INFO)
+            logname = __name__.rsplit(".", 1)[-1]
+            self.logger = logging.getLogger(logname)
+            self.logger.setLevel(logging.DEBUG)
+            log_handler = logging.FileHandler(logname + ".log")
+            formatter = logging.Formatter(
+                "%(asctime)s--%(name)s--%(levelname)s--%(module)s--"
+                "%(funcName)s--%(message)s")
+            log_handler.setFormatter(formatter)
+            self.logger.addHandler(log_handler)
+
+            console_handler = logging.StreamHandler()
+            console_formatter = logging.Formatter("%(asctime)s--%(message)s")
+            console_handler.setFormatter(console_formatter)
+            self.logger.addHandler(console_handler)
+
+            self.logger.info("Logger initialized for SMC8 Stage")
         else:
             self.logger = None
 
