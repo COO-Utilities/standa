@@ -18,16 +18,7 @@ class TestSMC8(unittest.TestCase):
         mock_ximc_obj.return_value = self.mock_ximc
         self.mock_ximc.read.return_value = b""
         self.controller = SMC(ip="123.456.789.101", port=1234, log=False)
-        self.controller.axisping  = self.mock_ximc
-        self.controller.get_loop()
-
-
-    def test_send_command(self):
-        """Test sending _get_infocommand to the controller."""
-        with patch.object(self.controller, "write") as mock_write:
-            with self.assertRaises(NotImplementedError):
-                self.controller._get_info()#pylint: disable=protected-access
-                mock_write.assert_called_with(bytes([0x05, 0x00, 0x00, 0x00, 0x11, 0x01]))  
+        self.controller.axis  = self.mock_ximc
 
     def test_get_loop(self):
         """Testing sending the correct bytes to get the loop status from the gimbal."""

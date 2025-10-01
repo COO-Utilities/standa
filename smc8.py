@@ -70,7 +70,7 @@ class SMC(object):
         #try to open
         try:
             #open device
-            self.device_open()
+            self.axis.device_open()
             #get and save engine settings
             self.engine_settings = self.axis.get_engine_settings()
             #Set calb for user units TODO:: Check if this is correct(SPECIFICALLY THE MICROSTEP MODE)
@@ -164,32 +164,6 @@ class SMC(object):
             self.logger.error("Error getting device information: %s", str(e))
             return False
 
-    def reference(self):
-        '''
-            References stage so internal firmware can recalibrate its position
-            -Will Reference and move to the last valid position.
-            return: bool on successful ref
-            libximc::
-
-            TODO:: Determine if this is needed, as it is not in the libximc docs
-        '''
-        #Check if connection not open
-        if not self.dev_open:
-            #log closed connection
-            self.logger.error("Device not open, cannot reference stage.")
-            return False
-
-        #try reference
-            #get current position
-
-            #start reference
-                #provide feedback if reference went well
-
-            #go back to priviouse position
-            
-            #return true if succesful
-        #catch error
-            #log error and return false
 
     def home(self):
         '''
@@ -207,10 +181,8 @@ class SMC(object):
         #Try to home to zero or parked position
         try:
             self.axis.command_homezero()
-            self.axis.command_wait_for_stop(100)
             #Check position after homing
-            position = self.axis.get_position()
-            self.logger.info("Stage homed to position: %s", position.Position)   
+            self.logger.info("Stage sent to homed position which is 0")
             #return true if succesful
             return True
         #catch error  
@@ -243,15 +215,15 @@ class SMC(object):
                 return False
             #move absolute
             self.axis.command_move_calb(position)
-            self.axis.command_wait_for_stop(100)
+            #self.axis.command_wait_for_stop(100)
 
             #after move is done, check position
             position = self.axis.get_position_calb()
-            if position.Error != 0:
-                self.logger.error("Error moving stage: %s", position.Error)
+            if pos.Error != 0:
+                self.logger.error("Error moving stage: %s", pos.Error)
                 return False
             else: 
-                self.logger.info("Stage moved to position: %s", position.Position)
+                self.logger.info("Stage sent to position: %s", position)
                 #return true if succesful
                 return True
         #catch error
@@ -288,15 +260,15 @@ class SMC(object):
                 return False
             #move relative
             self.axis.command_movr_calb(position)
-            self.axis.command_wait_for_stop(100)
+            #self.axis.command_wait_for_stop(100)
 
             #after move is done, check position
-            position = self.axis.get_position_calb()
+            pos = self.axis.get_position_calb()
             if position.Error != 0:
-                self.logger.error("Error moving stage: %s", position.Error)
+                self.logger.error("Error moving stage: %s", pos.Error)
                 return False
             else: 
-                self.logger.info("Stage moved to position: %s", position.Position)
+                self.logger.info("Stage moved to position: %s", position)
                 #return true if succesful
                 return True
         #catch error
