@@ -218,8 +218,8 @@ class SMC(object):
             #self.axis.command_wait_for_stop(100)
 
             #after move is done, check position
-            position = self.axis.get_position_calb()
-            if pos.Error != 0:
+            pos = self.axis.get_position_calb()
+            if pos.Error is not None:
                 self.logger.error("Error moving stage: %s", pos.Error)
                 return False
             else: 
@@ -253,10 +253,10 @@ class SMC(object):
             #get current position
             current_position = self.axis.get_position_calb().Position
             #calculate new position
-            position = current_position + position
+            new_position = current_position + position
             #check if new position is within limits
-            if position < self.min_limit or position > self.max_limit:
-                self.logger.error("Position out of limits: %s", position)
+            if new_position < self.min_limit or new_position > self.max_limit:
+                self.logger.error("Position out of limits: %s", new_position)
                 return False
             #move relative
             self.axis.command_movr_calb(position)
@@ -327,7 +327,7 @@ class SMC(object):
                             f"Error: {status.Error}, Moving: {status.Moving}"
             #return status in user friendly way
             self.logger.info(status_string)
-            return status_string
+            return status.Status, status.Position, status.Error, status.Moving, status_string
         #catch error
         except Exception as e:
             #log error and return false
