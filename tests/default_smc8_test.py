@@ -20,8 +20,7 @@ class Comms_Test(unittest.TestCase):
     #def setUp(self):
     dev = None
     success = True
-    IP = '192.168.29.1'
-    port = 10012
+    device = ""
     log = False
     error_tolerance = 0.1
 
@@ -31,14 +30,13 @@ class Comms_Test(unittest.TestCase):
     def test_connection(self):
         time.sleep(.2)
         # Open connection     
-        self.dev = SMC(ip=self.IP, port = self.port,log = self.log)
+        self.dev = SMC(device_uri = self.device,log = self.log)
         time.sleep(.2)
         self.dev.open()
         time.sleep(.25)
         assert self.dev.get_info()
         assert self.dev.serial_number is not None
         assert self.dev.power_setting is not None
-        assert self.dev.command_read_setting is not None
         assert self.dev.device_information is not None
         #Close connection
         self.dev.close()
@@ -59,7 +57,7 @@ class Comms_Test(unittest.TestCase):
     def status_communication(self):
         time.sleep(.2)
         # Open connection     
-        self.dev = SMC(ip=self.IP, port = self.port,log = self.log)
+        self.dev = SMC(device_uri = self.device,log = self.log)
         time.sleep(.2)
         self.dev.open()
         time.sleep(.25)

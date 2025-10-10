@@ -31,17 +31,17 @@ Low-level Python or simplified wrapper modules to send commands to Standa contro
     time.sleep(5) #Give time for stage to move
 
     # Query Position
-    pos, pos_str = dev.get_position() # Query Position
+    pos = dev.get_position() # Query Position
 
     # Move Relative to its current position
-    dev.move_rel(position = 5.0) 
+    dev.move_rel(position = 5) #positive ot negative
     time.sleep(5)
 
     # Move to absolute position
     dev.move_abs(position = 10) 
     time.sleep(5)
 
-    pos, pos_str = dev.get_position()
+    pos = dev.get_position()
     dev.home()
     time.sleep(5)
     #Close connection

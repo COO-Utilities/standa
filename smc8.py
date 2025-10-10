@@ -4,7 +4,9 @@
 
 import libximc.highlevel as ximc
 import logging
-
+import pathlib
+import os
+import time
 
 
 class SMC(object):
@@ -17,7 +19,7 @@ class SMC(object):
             converting steps to mm used in API, adjust as needed
     '''
 
-    def __init__(self, ip: str, port: int, step_size:float = 0.0025, log: bool = True):
+    def __init__(self, device_uri: str, log: bool, step_size:float = 0.0025):
         '''
             Inicializes the device
             parameters: ip string, port integer, logging bool
@@ -45,20 +47,35 @@ class SMC(object):
         self.logger.info("Logger initialized for SMC8 Stage")
 
         #Inicialize variables and objects
-        # get coms
-        self.ip = ip
-        self.port = port
+        self._move_cmd_flags = ximc.MvcmdStatus  # Default move command flags
+        self._state_flags = ximc.StateFlags
+        self.serial_number = None
+        self.power_setting = None
+        self.device_information = None
+        self.engine_settings = None
+        self.min_limit = None
+        self.max_limit = None
+        self.homed_and_happy_bool = False
+        self.uPOSITION = 0 #Constant is 0 for DC motors and avaries for stepper motors
+                           #look into ximc library for details on uPOSITION 
+
+        # Reference for connecting to device
+        # device_uri = r"xi-emu:///ABS_PATH/virtual_controller.bin"  # Virtual device
+        # device_uri = r"xi-com:\\.\COM111"                        # Serial port
+        # device_uri = "xi-tcp://172.16.130.155:1820"              # Raw TCP connection
+        # device_uri = "xi-net://192.168.1.120/abcd"               # XiNet connection
+        self.device_uri = device_uri
+
         self.step_size_coeff = step_size  # Example conversion coefficient, adjust as needed(mm)
-        self.dev_open = False
-        self.axis = ximc.Axis(self.ip, self.port)
+        self.dev_open = False   
+        self._axis = ximc.Axis(self.device_uri)
 
     def open(self):
         '''
             Opens communication to the Device, gathers general information to 
             store in local variables.
             return: Bool for successful or unsuccessful connection
-            libximc:: open_device(), get_serial_number(), get_power_setting()
-                      command_read_settings(),  get_device_information()
+            libximc:: open_device()
         '''
         #Check if already open
         if self.dev_open:
@@ -70,15 +87,15 @@ class SMC(object):
         #try to open
         try:
             #open device
-            self.axis.device_open()
+            self._axis.open_device()
             #get and save engine settings
-            self.engine_settings = self.axis.get_engine_settings()
+            self.engine_settings = self._axis.get_engine_settings()
             #Set calb for user units TODO:: Check if this is correct(SPECIFICALLY THE MICROSTEP MODE)
-            self.axis.set_calb(self.step_size_coeff, self.axis.engine_settings.MicrosetpMode)
-            #Set limits TODO: Check if this is correct when having the device
-            self.limits = self.engine_settings.Limits
-            self.min_limit = self.limits.MinLimit
-            self.max_limit = self.limits.MaxLimit
+            self._axis.set_calb(self.step_size_coeff, self._axis.engine_settings.MicrosetpMode)
+            #Set limits
+            self.limits = self._axis.get_edges_settings()
+            self.min_limit = self.limits.LeftBorder
+            self.max_limit = self.limits.RightBorder
 
             self.logger.info("Device opened successfully.")
 
@@ -97,7 +114,7 @@ class SMC(object):
         '''
             Closes communication to the Device
             return: Bool for successful or unsuccessful termination
-            libximc:: close_device(), get_position()
+            libximc:: close_device()
         '''
         #Check if already open
         if not self.dev_open:
@@ -109,7 +126,7 @@ class SMC(object):
 
         #Try to close
         try:
-            self.axis.close_device()
+            self._axis.close_device()
             self.dev_open = False
             self.logger.info("Device closed successfully.")
             #return true if succesful
@@ -142,20 +159,17 @@ class SMC(object):
         #Try to get info
         try:
             #get serial number
-            self.serial_number = self.axis.get_serial_number()
+            self.serial_number = self._axis.get_serial_number()
             #get power settings
-            self.power_setting = self.axis.get_power_setting()
-            #get command read settings
-            self.command_read_setting = self.axis.command_read_settings()
+            self.power_setting = self._axis.get_power_setting()
             #get device information
-            self.device_information = self.axis.get_device_information()
+            self.device_information = self._axis.get_device_information()
 
             self.logger.info("Device opened successfully.")
-            self.logger.info("Serial number: %s", self.serial_number)
-            self.logger.info("Power setting: %s", self.power_setting)
-            self.logger.info("Command read settings: %s", self.command_read_setting)
+            self.logger.info("Serial number: ", self.serial_number)
+            self.logger.info("Power setting: \n", self.power_setting)
             #Log device information
-            self.logger.info("Device information: %s", self.device_information)
+            self.logger.info("Device information: \n", self.device_information)
 
             #return true if successful
             return True
@@ -180,10 +194,11 @@ class SMC(object):
 
         #Try to home to zero or parked position
         try:
-            self.axis.command_homezero()
+            self._axis.command_homezero()
             #Check position after homing
             self.logger.info("Stage sent to homed position which is 0")
             #return true if succesful
+            self.status()
             return True
         #catch error  
         except Exception as e:
@@ -192,14 +207,14 @@ class SMC(object):
             #return false if unsuccessful
             return False
 
-    def move_abs(self, position):
+    def move_abs(self, position:int):
         '''
             Move the stage to a ABSOLUTE position. Send stage to any specific
                 location within the device limits.
             - Check min_limit and max_limit for valid inputs
             parameters: min_limit < int:"position" < max_limit
             return: bool on successful or unsuccessful absolute move
-            libximc:: command_move_calb()
+            libximc:: command_move()
         '''
         #Check if connection not open
         if not self.dev_open:
@@ -211,35 +226,34 @@ class SMC(object):
         try:
             #check limits/valid inputs
             if position < self.min_limit or position > self.max_limit:
-                self.logger.error("Position out of limits: %s", position)
+                self.logger.error("Position out of limits: ", position)
                 return False
             #move absolute
-            self.axis.command_move_calb(position)
-            #self.axis.command_wait_for_stop(100)
+            self._axis.command_move(position, self.uPOSITION)
 
             #after move is done, check position
-            pos = self.axis.get_position_calb()
-            if pos.Error is not None:
-                self.logger.error("Error moving stage: %s", pos.Error)
-                return False
-            else: 
-                self.logger.info("Stage sent to position: %s", position)
-                #return true if succesful
-                return True
+            pos = self.get_position()
+            while pos != position:
+                error = position - pos
+                self.move_rel(error)
+                pos = self.get_position()
+            self.logger.info("Stage at position: ", pos)
+            #return true if succesful
+            return True
         #catch error
         except Exception as e:
             #log error and return false
-            self.logger.error("Error moving stage: %s", str(e))
+            self.logger.error("Error moving stage: ", str(e))
             return False
 
-    def move_rel(self, position:float):
+    def move_rel(self, position:int):
         '''
             Move the stage to a RELATIVE position. Send stage to a position
                 relative to its current position.
             - Check min_limit and max_limit for range of device
-            parameters: min_limit < (current_position+int:"position") < max_limit
+            parameters: min_limit < +- int for relative move < max_limit
             return: bool on successful or unsuccessful relative move
-            libximc:: command_movr_calb()
+            libximc:: command_movr()
         '''
         #Check if connection not open
         if not self.dev_open:
@@ -251,7 +265,7 @@ class SMC(object):
         try:
             #check limits/valid inputs
             #get current position
-            current_position = self.axis.get_position_calb().Position
+            current_position = self.get_position()
             #calculate new position
             new_position = current_position + position
             #check if new position is within limits
@@ -259,18 +273,13 @@ class SMC(object):
                 self.logger.error("Position out of limits: %s", new_position)
                 return False
             #move relative
-            self.axis.command_movr_calb(position)
-            #self.axis.command_wait_for_stop(100)
+            self._axis.command_movr(position, self.uPOSITION)
 
             #after move is done, check position
-            pos = self.axis.get_position_calb()
-            if position.Error != 0:
-                self.logger.error("Error moving stage: %s", pos.Error)
-                return False
-            else: 
-                self.logger.info("Stage moved to position: %s", position)
-                #return true if succesful
-                return True
+            pos = self.get_position()
+            self.logger.info("Stage moved to position: %s", position)
+            #return true if succesful
+            return True
         #catch error
         except Exception as e:
             #log error and return false
@@ -292,13 +301,9 @@ class SMC(object):
         #Try get_position
         try:
             #get position
-            position = self.axis.get_position_calb()
-            #return aspects of the position object
-            position_string = f"Position: {position.Position}, " \
-                              f"Error: {position.Error}, " \
-                              f"Moving: {position.Moving}"
-            self.logger.info(position_string)
-            return position.Position, position_string
+            pos = self._axis.get_position()
+            #return aspects of the position object  
+            return pos.Position
         #catch error
         except Exception as e:
             #log error and return None
@@ -321,13 +326,13 @@ class SMC(object):
         #Try status function    
         try:
             #get status
-            status = self.axis.get_status_calb()
+            status = self._axis.get_status()
             #parse results
-            status_string = f"Status: {status.Status}, Position: {status.Position}, " \
-                            f"Error: {status.Error}, Moving: {status.Moving}"
             #return status in user friendly way
-            self.logger.info(status_string)
-            return status.Status, status.Position, status.Error, status.Moving, status_string
+            self.logger.info(f"Position: {status.CurPosition}")
+            self.homed__and_happy_bool = bool(status.Flags & self._state_flags.STATE_IS_HOMED |
+                                                 self._state_flags.STATE_EEPROM_CONNECTED)
+            return status
         #catch error
         except Exception as e:
             #log error and return false
@@ -349,10 +354,12 @@ class SMC(object):
 
         #Try imidiate stop of stage
         try:
-            self.axis.command_stop()
+            self._axis.command_stop()
             #Check status after halting
-            status = self.axis.get_status_calb()
-            #TODO:: Finish the halt check
+            status = self._axis.get_status()
+            if status.MvCmdSts != self.move_cmd_flags.MVCMD_STOP:
+                self.halt()  #Recursively call halt if not stopped
+
             #status.Moving
             self.logger.info("Stage halted successfully.")
             #return true if succesful
