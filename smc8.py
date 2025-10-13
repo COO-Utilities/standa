@@ -166,10 +166,10 @@ class SMC(object):
             self.device_information = self._axis.get_device_information()
 
             self.logger.info("Device opened successfully.")
-            self.logger.info("Serial number: ", self.serial_number)
-            self.logger.info("Power setting: \n", self.power_setting)
+            self.logger.info(f"Serial number: {self.serial_number}")
+            self.logger.info(f"Power setting: {self.power_setting}")
             #Log device information
-            self.logger.info("Device information: \n", self.device_information)
+            self.logger.info(f"Device information: {self.device_information}")
 
             #return true if successful
             return True
@@ -353,7 +353,7 @@ class SMC(object):
             self._axis.command_stop()
             #Check status after halting
             status = self._axis.get_status()
-            if status.MvCmdSts != self.move_cmd_flags.MVCMD_STOP:
+            if status.MvCmdSts != self._move_cmd_flags.MVCMD_STOP:
                 self.halt()  #Recursively call halt if not stopped
 
             #status.Moving
