@@ -104,7 +104,7 @@ class SMC(object):
             return True
         except Exception as e:
             #log error
-            self.logger.error("Error opening device: %s", str(e))
+            self.logger.error(f"Error opening device: {e}")
             
             #return false if unsuccessful
             self.dev_open = False
@@ -134,7 +134,7 @@ class SMC(object):
         except Exception as e:
         #catch error
             #log error and return false
-            self.logger.error("Error closing device: %s", str(e))
+            self.logger.error(f"Error closing device: {e}")
             
             #return false if unsuccessful
             self.dev_open = True
@@ -161,7 +161,7 @@ class SMC(object):
             #get serial number
             self.serial_number = self._axis.get_serial_number()
             #get power settings
-            self.power_setting = self._axis.get_power_setting()
+            self.power_setting = self._axis.get_power_settings()
             #get device information
             self.device_information = self._axis.get_device_information()
 
@@ -175,7 +175,7 @@ class SMC(object):
             return True
         except Exception as e:
             #log error and return None
-            self.logger.error("Error getting device information: %s", str(e))
+            self.logger.error(f"Error getting device information: {e}")
             return False
 
 
@@ -203,7 +203,7 @@ class SMC(object):
         #catch error  
         except Exception as e:
             #log error
-            self.logger.error("Error homing stage: %s", str(e))
+            self.logger.error(f"Error homing stage: {e}")
             #return false if unsuccessful
             return False
 
@@ -226,20 +226,20 @@ class SMC(object):
         try:
             #check limits/valid inputs
             if position < self.min_limit or position > self.max_limit:
-                self.logger.error("Position out of limits: ", position)
+                self.logger.error(f"Position out of limits: {position}")
                 return False
             #move absolute
             self._axis.command_move(position, self.uPOSITION)
 
             #after move is done, check position
             pos = self.get_position()
-            self.logger.info("Stage at position: ", pos)
+            self.logger.info(f"Stage at position: {pos}")
             #return true if succesful
             return True
         #catch error
         except Exception as e:
             #log error and return false
-            self.logger.error("Error moving stage: ", str(e))
+            self.logger.error(f"Error moving stage: {e}")
             return False
 
     def move_rel(self, position:int):
@@ -266,20 +266,20 @@ class SMC(object):
             new_position = current_position + position
             #check if new position is within limits
             if new_position < self.min_limit or new_position > self.max_limit:
-                self.logger.error("Position out of limits: %s", new_position)
+                self.logger.error(f"Position out of limits: {new_position}")
                 return False
             #move relative
             self._axis.command_movr(position, self.uPOSITION)
 
             #after move is done, check position
             pos = self.get_position()
-            self.logger.info("Stage moved to position: %s", position)
+            self.logger.info(f"Stage moved to position: {position}")
             #return true if succesful
             return True
         #catch error
         except Exception as e:
             #log error and return false
-            self.logger.error("Error moving stage: %s", str(e))
+            self.logger.error(f"Error moving stage: {e}")
             return False
 
     def get_position(self):
@@ -303,7 +303,7 @@ class SMC(object):
         #catch error
         except Exception as e:
             #log error and return None
-            self.logger.error("Error getting position: %s", str(e))
+            self.logger.error(f"Error getting position: {e}")
             return None
 
     def status(self):
@@ -332,7 +332,7 @@ class SMC(object):
         #catch error
         except Exception as e:
             #log error and return false
-            self.logger.error("Error getting status: %s", str(e))
+            self.logger.error(f"Error getting status: {e}")
             return None
 
     def halt(self):
@@ -363,5 +363,5 @@ class SMC(object):
         #catch error
         except Exception as e:
             #log error and return false
-            self.logger.error("Error halting stage: %s", str(e))
+            self.logger.error(f"Error halting stage: {e}")
             return False
