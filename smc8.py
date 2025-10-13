@@ -91,7 +91,7 @@ class SMC(object):
             #get and save engine settings
             self.engine_settings = self._axis.get_engine_settings()
             #Set calb for user units TODO:: Check if this is correct(SPECIFICALLY THE MICROSTEP MODE)
-            self._axis.set_calb(self.step_size_coeff, self._axis.engine_settings.MicrosetpMode)
+            self._axis.set_calb(self.step_size_coeff, self.engine_settings.MicrosetpMode)
             #Set limits
             self.limits = self._axis.get_edges_settings()
             self.min_limit = self.limits.LeftBorder
