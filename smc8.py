@@ -230,10 +230,6 @@ class SMC(object):
                 return False
             #move absolute
             self._axis.command_move(position, self.uPOSITION)
-
-            #after move is done, check position
-            pos = self.get_position()
-            self.logger.info(f"Stage at position: {pos}")
             #return true if succesful
             return True
         #catch error
@@ -270,10 +266,6 @@ class SMC(object):
                 return False
             #move relative
             self._axis.command_movr(position, self.uPOSITION)
-
-            #after move is done, check position
-            pos = self.get_position()
-            self.logger.info(f"Stage moved to position: {position}")
             #return true if succesful
             return True
         #catch error
