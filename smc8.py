@@ -70,7 +70,7 @@ class SMC(object):
         self.dev_open = False   
         self._axis = ximc.Axis(self.device_uri)
 
-    def open(self):
+    def open_connection(self):
         '''
             Opens communication to the Device, gathers general information to 
             store in local variables.
@@ -110,7 +110,7 @@ class SMC(object):
             self.dev_open = False
             return False
 
-    def close(self):
+    def close_connection(self):
         '''
             Closes communication to the Device
             return: Bool for successful or unsuccessful termination
@@ -233,10 +233,6 @@ class SMC(object):
 
             #after move is done, check position
             pos = self.get_position()
-            while pos != position:
-                error = position - pos
-                self.move_rel(error)
-                pos = self.get_position()
             self.logger.info("Stage at position: ", pos)
             #return true if succesful
             return True
@@ -330,7 +326,7 @@ class SMC(object):
             #parse results
             #return status in user friendly way
             self.logger.info(f"Position: {status.CurPosition}")
-            self.homed__and_happy_bool = bool(status.Flags & self._state_flags.STATE_IS_HOMED |
+            self.homed_and_happy_bool = bool(status.Flags & self._state_flags.STATE_IS_HOMED |
                                                  self._state_flags.STATE_EEPROM_CONNECTED)
             return status
         #catch error
