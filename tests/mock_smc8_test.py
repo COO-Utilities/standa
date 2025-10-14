@@ -17,7 +17,7 @@ class TestSMC8(unittest.TestCase):
         mock_open_device = patcher.start()
         self.mock_ximc = MagicMock()
         mock_open_device.return_value = self.mock_ximc
-        self.controller = SMC(ip="123.456.789.101", port=1234, log=False)
+        self.controller = SMC(device_uri="xi-com://tty4", log=False)
         self.controller.axis  = self.mock_ximc
         self.controller.dev_open = True
         self.controller.min_limit = 0.0

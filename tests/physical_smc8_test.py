@@ -29,7 +29,7 @@ class Physical_Test(unittest.TestCase):
         # Open connection     
         self.dev = SMC(device_uri = self.device,log = self.log)
         time.sleep(.2)
-        self.dev.open()
+        self.dev.open_connection()
         time.sleep(.25)
         assert self.dev.get_info()
         assert self.dev.serial_number is not None
@@ -44,7 +44,7 @@ class Physical_Test(unittest.TestCase):
         # Use an unreachable IP (TEST-NET-1 range, reserved for docs/testing)
         bad_device = ""   # usually blocked/unusable
         self.dev = SMC(device_uri = "", log=self.log)
-        success = self.dev.open()
+        success = self.dev.open_connection()
         self.assertFalse(success, "Expected connection failure with invalid IP/port")
         self.dev.close()
 
@@ -55,7 +55,7 @@ class Physical_Test(unittest.TestCase):
         # Open connection     
         self.dev = SMC(device_uri = self.device,log = self.log)
         time.sleep(.2)
-        self.dev.open()
+        self.dev.open_connection()
         time.sleep(.25)
         self.dev.get_info()
         status = self.dev.status()
@@ -71,7 +71,7 @@ class Physical_Test(unittest.TestCase):
         # Open connection    
         self.dev = SMC(device_uri = self.device,log = self.log)
         time.sleep(.2)
-        self.dev.open()
+        self.dev.open_connection()
         time.sleep(.25)
         assert self.dev.get_info()
         status = self.dev.status()
@@ -89,7 +89,7 @@ class Physical_Test(unittest.TestCase):
         # Open connection    
         self.dev = SMC(device_uri = self.device,log = self.log)
         time.sleep(.2)
-        self.dev.open()
+        self.dev.open_connection()
         time.sleep(.25)
         assert self.dev.get_info()
         status = self.dev.status()
@@ -117,7 +117,7 @@ class Physical_Test(unittest.TestCase):
         # Open connection    
         self.dev = SMC(device_uri = self.device,log = self.log)
         time.sleep(.2)
-        self.dev.open()
+        self.dev.open_connection()
         time.sleep(.25)
         assert self.dev.get_info()
         status = self.dev.status()

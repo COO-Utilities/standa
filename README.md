@@ -17,8 +17,8 @@ Low-level Python or simplified wrapper modules to send commands to Standa contro
     from util.smc8 import SMC
 
     # Open connection    
-    dev = SMC(ip="", port = 1234,log = True)
-    dev.open()
+    dev = SMC(device_uri="",log = True)
+    dev.open_connection()
     time.sleep(.25)
     #Populates dev with device info
     dev.get_info() 
@@ -45,7 +45,7 @@ Low-level Python or simplified wrapper modules to send commands to Standa contro
     dev.home()
     time.sleep(5)
     #Close connection
-    dev.close()
+    dev.close_connection()
 ```
 
 ## 🧪 Testing
