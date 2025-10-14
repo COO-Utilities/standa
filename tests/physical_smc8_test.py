@@ -1,7 +1,7 @@
 
 
 import pytest
-pytestmark = pytest.mark.integration
+pytestmark = pytest.mark.functional
 import sys
 import os
 import unittest
@@ -9,7 +9,7 @@ import time
 
 ##########################
 ## CONFIG
-## connection and Disconnection in all test
+## connection and Disconnection in all test 
 ##########################
 class Physical_Test(unittest.TestCase):
 
@@ -17,8 +17,7 @@ class Physical_Test(unittest.TestCase):
     def setUp(self):
         self.dev = None
         self.success = True
-        self.IP = '192.168.29.100'
-        self.port = 10012
+        self.device = ""
         self.log = False
         self.error_tolerance = 0.1
 
@@ -28,9 +27,9 @@ class Physical_Test(unittest.TestCase):
     ##########################
     def test_connection(self):
         # Open connection     
-        self.dev = SMC(ip=self.IP, port = self.port,log = self.log)
+        self.dev = SMC(device_uri = self.device,log = self.log)
         time.sleep(.2)
-        self.dev.open()
+        self.dev.open_connection()
         time.sleep(.25)
         assert self.dev.get_info()
         assert self.dev.serial_number is not None
@@ -43,10 +42,9 @@ class Physical_Test(unittest.TestCase):
     
     def test_connection_failure(self):
         # Use an unreachable IP (TEST-NET-1 range, reserved for docs/testing)
-        bad_ip = "123.456.789.101"
-        bad_port = 1234  # usually blocked/unusable
-        self.dev = SMC(ip=bad_ip, port=bad_port, log=self.log)
-        success = self.dev.open()
+        bad_device = ""   # usually blocked/unusable
+        self.dev = SMC(device_uri = "", log=self.log)
+        success = self.dev.open_connection()
         self.assertFalse(success, "Expected connection failure with invalid IP/port")
         self.dev.close()
 
@@ -55,9 +53,9 @@ class Physical_Test(unittest.TestCase):
     ##########################
     def status_communication(self):
         # Open connection     
-        self.dev = SMC(ip=self.IP, port = self.port,log = self.log)
+        self.dev = SMC(device_uri = self.device,log = self.log)
         time.sleep(.2)
-        self.dev.open()
+        self.dev.open_connection()
         time.sleep(.25)
         self.dev.get_info()
         status = self.dev.status()
@@ -71,16 +69,16 @@ class Physical_Test(unittest.TestCase):
     ##########################
     def test_home(self):
         # Open connection    
-        self.dev = SMC(ip=self.IP, port = self.port,log = self.log)
+        self.dev = SMC(device_uri = self.device,log = self.log)
         time.sleep(.2)
-        self.dev.open()
+        self.dev.open_connection()
         time.sleep(.25)
         assert self.dev.get_info()
         status = self.dev.status()
         assert status is not None
         assert self.dev.home()
         time.sleep(.25)
-        pos, pos_str = self.dev.get_position()
+        pos = self.dev.get_position()
         assert abs(pos - 0) < self.error_tolerance*2
         
         #Close connection
@@ -89,27 +87,27 @@ class Physical_Test(unittest.TestCase):
 
     def test_move(self):
         # Open connection    
-        self.dev = SMC(ip=self.IP, port = self.port,log = self.log)
+        self.dev = SMC(device_uri = self.device,log = self.log)
         time.sleep(.2)
-        self.dev.open()
+        self.dev.open_connection()
         time.sleep(.25)
         assert self.dev.get_info()
         status = self.dev.status()
         assert status is not None
         assert self.dev.home()
         time.sleep(.25)
-        pos, pos_str = self.dev.get_position()
+        pos = self.dev.get_position()
         assert abs(pos - 0) < self.error_tolerance*2
         assert self.dev.move_abs(position = 5)
         time.sleep(.25)
-        pos, pos_str = self.dev.get_position()
+        pos = self.dev.get_position()
         assert abs(pos - 5) < self.error_tolerance*2
         assert self.dev.move_rel(position = 5.0)
         time.sleep(.25)
         assert abs(pos - 10) < self.error_tolerance*2
         assert self.dev.home()
         time.sleep(.25)
-        pos, pos_str = self.dev.get_position()
+        pos = self.dev.get_position()
         assert abs(pos - 0) < self.error_tolerance*2
         #Close connection
         self.dev.close()
@@ -117,23 +115,24 @@ class Physical_Test(unittest.TestCase):
 
     def test_halt():
         # Open connection    
-        self.dev = SMC(ip=self.IP, port = self.port,log = self.log)
+        self.dev = SMC(device_uri = self.device,log = self.log)
         time.sleep(.2)
-        self.dev.open()
+        self.dev.open_connection()
         time.sleep(.25)
         assert self.dev.get_info()
         status = self.dev.status()
         assert status is not None
         end = self.dev.max_limit - 1 
         assert self.dev.move_abs(position = end)
-        time.sleep(.1)
-        assert self.dev.home()
-        time.sleep(.2)
+        time.sleep(2)
+        assert self.dev.move_abs(position = (self.min_limit + 1))
         assert self.dev.halt()
         time.sleep(.25)
-        pos, pos_str = self.dev.get_position()
-        assert pos != 0
+        pos = self.dev.get_position()
+        assert pos != (self.min_limit + 1)
         #Close connection
+        self.dev.home()
+        time.sleep(.25) 
         self.dev.close()
         time.sleep(.25)
 

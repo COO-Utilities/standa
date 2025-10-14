@@ -20,8 +20,7 @@ class Comms_Test(unittest.TestCase):
     #def setUp(self):
     dev = None
     success = True
-    IP = '192.168.29.1'
-    port = 10012
+    device = ""
     log = False
     error_tolerance = 0.1
 
@@ -31,17 +30,16 @@ class Comms_Test(unittest.TestCase):
     def test_connection(self):
         time.sleep(.2)
         # Open connection     
-        self.dev = SMC(ip=self.IP, port = self.port,log = self.log)
+        self.dev = SMC(device_uri = self.device,log = self.log)
         time.sleep(.2)
-        self.dev.open()
+        self.dev.open_connection()
         time.sleep(.25)
         assert self.dev.get_info()
         assert self.dev.serial_number is not None
         assert self.dev.power_setting is not None
-        assert self.dev.command_read_setting is not None
         assert self.dev.device_information is not None
         #Close connection
-        self.dev.close()
+        self.dev.close_connection()
         time.sleep(.25)
     
     def test_connection_failure(self):
@@ -49,9 +47,9 @@ class Comms_Test(unittest.TestCase):
         bad_ip = "123.456.789.101"
         bad_port = 1234  # usually blocked/unusable
         self.dev = SMC(ip=bad_ip, port=bad_port, log=self.log)
-        success = self.dev.open()
+        success = self.dev.open_connection()
         self.assertFalse(success, "Expected connection failure with invalid IP/port")
-        self.dev.close()
+        self.dev.close_connection()
 
     ##########################
     ## Status Communication
@@ -59,15 +57,15 @@ class Comms_Test(unittest.TestCase):
     def status_communication(self):
         time.sleep(.2)
         # Open connection     
-        self.dev = SMC(ip=self.IP, port = self.port,log = self.log)
+        self.dev = SMC(device_uri = self.device,log = self.log)
         time.sleep(.2)
-        self.dev.open()
+        self.dev.open_connection()
         time.sleep(.25)
         self.dev.get_info()
         status = self.dev.status()
         assert status is not None
 
-        self.dev.close()
+        self.dev.close_connection()
         time.sleep(.25)
 
 
