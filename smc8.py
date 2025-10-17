@@ -69,16 +69,15 @@ class SMC(object):
         # device_uri = "xi-tcp://172.16.130.155:1820"              # Raw TCP connection
         # device_uri = "xi-net://192.168.1.120/abcd"               # XiNet connection
         connection_type = connection_type.lower()
-        match connection_type:
-            case "serial":
-                self.device_uri = f"xi-com//{device_connection}"
-            case "tcp":
-                self.device_uri = f"xi-tcp://{device_connection}"
-            case "xinet":
-                self.device_uri = f"xi-net://{device_connection}"
-            case _:
-                self.logger.error(f"Unknown connection type: {connection_type}")
-                raise ValueError(f"Unknown connection type: {connection_type}")
+        if connection_type == "serial":
+            self.device_uri = f"xi-com//{device_connection}"
+        elif connection_type == "tcp":
+            self.device_uri = f"xi-tcp://{device_connection}"
+        elif connection_type == "xinet":
+            self.device_uri = f"xi-net://{device_connection}"
+        else:
+            self.logger.error(f"Unknown connection type: {connection_type}")
+            raise ValueError(f"Unknown connection type: {connection_type}")
 
 
         self.step_size_coeff = step_size  # Example conversion coefficient, adjust as needed(mm)
