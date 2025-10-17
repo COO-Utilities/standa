@@ -24,15 +24,14 @@ class Comms_Test(unittest.TestCase):
     device = ""
     log = False
     error_tolerance = 0.1
-    device_connection = "/dev/ximc/00007DF6"
+    device_connection = '/dev/ximc/00007DF6'
     connection_type = "serial"
 
     ##########################
-    ## Test Connection and Negative connection
+    ## TestConnection and failure connection
     ##########################
     def test_connection(self):
-        time.sleep(.2)
-        # Open connection     dev = SMC(device_connection = "/dev/ximc/00007DF6", connection_type = "serial", log = False)
+        # Open connection     
         self.dev = SMC(device_connection = self.device_connection, connection_type = self.connection_type, log = self.log)
         time.sleep(.2)
         self.dev.open_connection()
@@ -63,7 +62,7 @@ class Comms_Test(unittest.TestCase):
         time.sleep(.2)
         self.dev.open_connection()
         time.sleep(.25)
-        self.dev.get_info()
+        assert self.dev.get_info()
         status = self.dev.status()
         assert status is not None
 
