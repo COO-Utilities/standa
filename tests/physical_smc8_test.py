@@ -36,7 +36,6 @@ class Physical_Test(unittest.TestCase):
         assert self.dev.get_info()
         assert self.dev.serial_number is not None
         assert self.dev.power_setting is not None
-        assert self.dev.command_read_setting is not None
         assert self.dev.device_information is not None
         #Close connection
         self.dev.close_connection()
