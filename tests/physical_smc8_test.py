@@ -105,6 +105,7 @@ class Physical_Test(unittest.TestCase):
         assert abs(pos - 5) < self.error_tolerance*2
         assert self.dev.move_rel(position = 5)
         time.sleep(.25)
+        pos = self.dev.get_position()
         assert abs(pos - 10) < self.error_tolerance*2
         assert self.dev.home()
         time.sleep(.25)
