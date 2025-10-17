@@ -23,14 +23,16 @@ class Comms_Test(unittest.TestCase):
     device = ""
     log = False
     error_tolerance = 0.1
+    self.device_connection = "/dev/ximc/00007DF6"
+    self.connection_type = "serial"
 
     ##########################
     ## Test Connection and Negative connection
     ##########################
     def test_connection(self):
         time.sleep(.2)
-        # Open connection     
-        self.dev = SMC(device_uri = self.device,log = self.log)
+        # Open connection     dev = SMC(device_connection = "/dev/ximc/00007DF6", connection_type = "serial", log = False)
+        self.dev = SMC(device_connection = self.device_connection, connection_type = self.connection_type, log = self.log)
         time.sleep(.2)
         self.dev.open_connection()
         time.sleep(.25)
@@ -44,9 +46,8 @@ class Comms_Test(unittest.TestCase):
     
     def test_connection_failure(self):
         # Use an unreachable IP (TEST-NET-1 range, reserved for docs/testing)
-        bad_ip = "123.456.789.101"
-        bad_port = 1234  # usually blocked/unusable
-        self.dev = SMC(ip=bad_ip, port=bad_port, log=self.log)
+        bad_connection = "dev/ximc/0000"
+        self.dev = SMC(device_connection = bad_connection, connection_type = self.connection_type, log = self.log)
         success = self.dev.open_connection()
         self.assertFalse(success, "Expected connection failure with invalid IP/port")
         self.dev.close_connection()
@@ -57,7 +58,7 @@ class Comms_Test(unittest.TestCase):
     def status_communication(self):
         time.sleep(.2)
         # Open connection     
-        self.dev = SMC(device_uri = self.device,log = self.log)
+        self.dev = SMC(device_connection = self.device_connection, connection_type = self.connection_type, log = self.log)
         time.sleep(.2)
         self.dev.open_connection()
         time.sleep(.25)
