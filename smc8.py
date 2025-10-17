@@ -8,6 +8,9 @@ import pathlib
 import os
 import time
 
+#TODO:: Make device_uri a more user friendly. maybe just type and connection
+#    example: "serial", "tcp", "xinet", "emu"
+#    then have user give connection specifics in other parameters and formulate the string for ximc library
 
 class SMC(object):
     ''' 
@@ -19,7 +22,7 @@ class SMC(object):
             converting steps to mm used in API, adjust as needed
     '''
 
-    def __init__(self, device_uri: str, log: bool, step_size:float = 0.0025):
+    def __init__(self, device_connection: str, connection_type: str,log: bool, step_size:float = 0.0025):
         '''
             Inicializes the device
             parameters: ip string, port integer, logging bool
@@ -58,13 +61,24 @@ class SMC(object):
         self.homed_and_happy_bool = False
         self.uPOSITION = 0 #Constant is 0 for DC motors and avaries for stepper motors
                            #look into ximc library for details on uPOSITION 
+        self.device_uri = None
 
         # Reference for connecting to device
         # device_uri = r"xi-emu:///ABS_PATH/virtual_controller.bin"  # Virtual device
         # device_uri = r"xi-com:\\.\COM111"                        # Serial port
         # device_uri = "xi-tcp://172.16.130.155:1820"              # Raw TCP connection
         # device_uri = "xi-net://192.168.1.120/abcd"               # XiNet connection
-        self.device_uri = device_uri
+        match connection_type.lower():
+            case "serial":
+                self.device_uri = f"xi-com:\\./{device_connection}"
+            case "tcp":
+                self.device_uri = f"xi-tcp://{device_connection}"
+            case "xinet":
+                self.device_uri = f"xi-net://{device_connection}"
+            case _:
+                self.logger.error(f"Unknown connection type: {connection_type}")
+                raise ValueError(f"Unknown connection type: {connection_type}")
+
 
         self.step_size_coeff = step_size  # Example conversion coefficient, adjust as needed(mm)
         self.dev_open = False   
