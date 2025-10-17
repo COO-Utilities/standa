@@ -23,8 +23,8 @@ class Comms_Test(unittest.TestCase):
     device = ""
     log = False
     error_tolerance = 0.1
-    self.device_connection = "/dev/ximc/00007DF6"
-    self.connection_type = "serial"
+    device_connection = "/dev/ximc/00007DF6"
+    connection_type = "serial"
 
     ##########################
     ## Test Connection and Negative connection
