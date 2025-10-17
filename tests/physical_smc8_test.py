@@ -130,7 +130,7 @@ class Physical_Test(unittest.TestCase):
         assert self.dev.halt()
         time.sleep(.25)
         pos = self.dev.get_position()
-        assert pos != (self.min_limit + 1)
+        assert pos != (self.dev.min_limit + 1)
         #Close connection
         self.dev.home()
         time.sleep(.25) 
