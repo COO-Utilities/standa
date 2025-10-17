@@ -21,7 +21,7 @@ class Physical_Test(unittest.TestCase):
         self.device = ""
         self.log = False
         self.error_tolerance = 0.1
-        self.device_connection = "/dev/ximc/00007DF6"
+        self.device_connection = 'xi-com:///dev/ttyACM1'
         self.connection_type = "serial"
 
     ##########################
