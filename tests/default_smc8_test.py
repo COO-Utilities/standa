@@ -8,6 +8,7 @@ import sys
 import os
 import unittest
 import time
+from smc8 import SMC
 
 ##########################
 ## CONFIG
