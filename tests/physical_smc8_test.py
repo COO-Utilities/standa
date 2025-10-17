@@ -44,8 +44,8 @@ class Physical_Test(unittest.TestCase):
     
     def test_connection_failure(self):
         # Use an unreachable IP (TEST-NET-1 range, reserved for docs/testing)
-        bad_device = ""   # usually blocked/unusable
-        self.dev = SMC(device_uri = "", log=self.log)
+        bad_connection = "dev/ximc/0000"
+        self.dev = SMC(device_connection = bad_connection, connection_type = self.connection_type, log = self.log)
         success = self.dev.open_connection()
         self.assertFalse(success, "Expected connection failure with invalid IP/port")
         self.dev.close_connection()
