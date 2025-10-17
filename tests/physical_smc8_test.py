@@ -114,7 +114,7 @@ class Physical_Test(unittest.TestCase):
         self.dev.close_connection()
         time.sleep(.25)
 
-    def test_halt():
+    def test_halt(self):
         # Open connection    
         self.dev = SMC(device_connection = self.device_connection, connection_type = self.connection_type, log = self.log)
         time.sleep(.2)
