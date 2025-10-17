@@ -126,7 +126,7 @@ class Physical_Test(unittest.TestCase):
         end = self.dev.max_limit - 1 
         assert self.dev.move_abs(position = end)
         time.sleep(2)
-        assert self.dev.move_abs(position = (self.min_limit + 1))
+        assert self.dev.move_abs(position = (self.dev.min_limit + 1))
         assert self.dev.halt()
         time.sleep(.25)
         pos = self.dev.get_position()
