@@ -16,7 +16,7 @@ Low-level Python or simplified wrapper modules to send commands to Standa contro
 ```python
     from util.smc8 import SMC
 
-    # Open connection    
+    # Open connection examples  
     dev = SMC(device_connection="192.123.123.112", connection_type = "tcp",log = True)
     dev = SMC(device_connection="", connection_type = "serial",log = True)
     dev.open_connection()
