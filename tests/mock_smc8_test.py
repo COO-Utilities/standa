@@ -17,7 +17,7 @@ class TestSMC8(unittest.TestCase):
         mock_open_device = patcher.start()
         self.mock_ximc = MagicMock()
         mock_open_device.return_value = self.mock_ximc
-        self.controller = SMC(device_uri="xi-com://tty4", log=False)
+        self.controller = SMC(device_connection = "/dev/ximc/00007DF6", connection_type = "serial", log = False)
         self.controller.axis  = self.mock_ximc
         self.controller.dev_open = True
         self.controller.min_limit = 0.0
@@ -41,19 +41,19 @@ class TestSMC8(unittest.TestCase):
 
     def test_abs_move(self):
         """Testing sending the correct commands to abs move the SMC."""
-        with patch.object(self.controller.axis, "command_move") as mock_move:
+        with patch.object(self.controller._axis, "command_move") as mock_move:
             self.controller.move_abs(10.0)
             mock_move.assert_called_once_with(10.0)
     
     def test_rel_move(self):
         """Testing sending the correct commands to rel move the SMC."""
-        with patch.object(self.controller.axis, "command_movr") as mock_move:
+        with patch.object(self.controller._axis, "command_movr") as mock_move:
             self.controller.move_rel(10.0)
             mock_move.assert_called_once_with(10.0)
 
     def test_home(self):
         """Test setting the position from the SMC."""
-        with patch.object(self.controller.axis, "command_homezero") as mock_home:
+        with patch.object(self.controller._axis, "command_homezero") as mock_home:
             self.controller.home()
             mock_home.assert_called_once()
 
@@ -61,7 +61,7 @@ class TestSMC8(unittest.TestCase):
         """Test getting the position from the SMC."""
         self.controller.axis.get_position_calb = MagicMock(return_value=self.mock_ximc)
         pos = self.controller.get_position()
-        assert pos.Position == 10.0
+        assert pos == 10.0
 
     def test_get_status(self):
         """Test getting the status from the SMC."""

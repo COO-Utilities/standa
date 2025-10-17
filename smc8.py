@@ -68,7 +68,7 @@ class SMC(object):
         # device_uri = r"xi-com:\\.\COM111"                        # Serial port
         # device_uri = "xi-tcp://172.16.130.155:1820"              # Raw TCP connection
         # device_uri = "xi-net://192.168.1.120/abcd"               # XiNet connection
-        connection_type = connection_type.lower()
+        connection_type = connection_type.lower().strip()
         if connection_type == "serial":
             self.device_uri = f"xi-com//{device_connection}"
         elif connection_type == "tcp":
