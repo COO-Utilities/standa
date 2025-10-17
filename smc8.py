@@ -70,7 +70,7 @@ class SMC(object):
         # device_uri = "xi-net://192.168.1.120/abcd"               # XiNet connection
         match connection_type.lower():
             case "serial":
-                self.device_uri = f"xi-com:\\./{device_connection}"
+                self.device_uri = f"xi-com//{device_connection}"
             case "tcp":
                 self.device_uri = f"xi-tcp://{device_connection}"
             case "xinet":
