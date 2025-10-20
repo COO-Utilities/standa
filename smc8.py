@@ -8,9 +8,6 @@ import pathlib
 import os
 import time
 
-#TODO:: Make device_uri a more user friendly. maybe just type and connection
-#    example: "serial", "tcp", "xinet", "emu"
-#    then have user give connection specifics in other parameters and formulate the string for ximc library
 
 class SMC(object):
     ''' 
