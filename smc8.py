@@ -15,11 +15,18 @@ import time
 class SMC(object):
     ''' 
         Class is for utilizing the libximc Library.
-        All functions from lib.ximc library is incorperated and this library
-        is meant to simplify commands for general use.
+        Functions from lib.ximc is incorporated into this class
+        to make it easier to use for common tasks.
         - using the more recently developed libximc.highlevel API
         - step_size:float = 0.0025 Conversion Coefficient, Example  for
             converting steps to mm used in API, adjust as needed
+        - All functions log their actions and errors to a log file
+        - Required Parameters:
+            device_connection: str = Connection string for device
+                - Ex: serial connection: '/COM3', '/dev/ximc/000746D30' or '192.123.123.92'
+            connection_type: str = Type of connection
+                - Options: 'serial', 'tcp', 'xinet'
+            log: bool = Enable or disable logging to file
     '''
 
     def __init__(self, device_connection: str, connection_type: str,log: bool, step_size:float = 0.0025):
