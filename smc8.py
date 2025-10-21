@@ -12,14 +12,21 @@ import time
 class SMC(object):
     ''' 
         Class is for utilizing the libximc Library.
-        All functions from lib.ximc library is incorperated and this library
-        is meant to simplify commands for general use.
+        Functions from lib.ximc is incorporated into this class
+        to make it easier to use for common tasks.
         - using the more recently developed libximc.highlevel API
         - step_size:float = 0.0025 Conversion Coefficient, Example  for
             converting steps to mm used in API, adjust as needed
+        - All functions log their actions and errors to a log file
+        - Required Parameters:
+            device_connection: str = Connection string for device
+                - Ex: serial connection: '/COM3', '/dev/ximc/000746D30' or '192.123.123.92'
+            connection_type: str = Type of connection
+                - Options: 'serial', 'tcp', 'xinet'
+            log: bool = Enable or disable logging to file
     '''
 
-    def __init__(self, device_uri: str, log: bool, step_size:float = 0.0025):
+    def __init__(self, device_connection: str, connection_type: str,log: bool, step_size:float = 0.0025):
         '''
             Inicializes the device
             parameters: ip string, port integer, logging bool
@@ -58,13 +65,24 @@ class SMC(object):
         self.homed_and_happy_bool = False
         self.uPOSITION = 0 #Constant is 0 for DC motors and avaries for stepper motors
                            #look into ximc library for details on uPOSITION 
+        self.device_uri = None
 
         # Reference for connecting to device
         # device_uri = r"xi-emu:///ABS_PATH/virtual_controller.bin"  # Virtual device
         # device_uri = r"xi-com:\\.\COM111"                        # Serial port
         # device_uri = "xi-tcp://172.16.130.155:1820"              # Raw TCP connection
         # device_uri = "xi-net://192.168.1.120/abcd"               # XiNet connection
-        self.device_uri = device_uri
+        connection_type = connection_type.lower().strip()
+        if connection_type == "serial":
+            self.device_uri = f"xi-com://{device_connection}"
+        elif connection_type == "tcp":
+            self.device_uri = f"xi-tcp://{device_connection}"
+        elif connection_type == "xinet":
+            self.device_uri = f"xi-net://{device_connection}"
+        else:
+            self.logger.error(f"Unknown connection type: {connection_type}")
+            raise ValueError(f"Unknown connection type: {connection_type}")
+
 
         self.step_size_coeff = step_size  # Example conversion coefficient, adjust as needed(mm)
         self.dev_open = False   

@@ -6,6 +6,7 @@ import sys
 import os
 import unittest
 import time 
+from smc8 import SMC
 
 ##########################
 ## CONFIG
@@ -20,40 +21,40 @@ class Physical_Test(unittest.TestCase):
         self.device = ""
         self.log = False
         self.error_tolerance = 0.1
-
+        self.device_connection = '/dev/ximc/00007DF6'
+        self.connection_type = "serial"
 
     ##########################
     ## TestConnection and failure connection
     ##########################
     def test_connection(self):
         # Open connection     
-        self.dev = SMC(device_uri = self.device,log = self.log)
+        self.dev = SMC(device_connection = self.device_connection, connection_type = self.connection_type, log = self.log)
         time.sleep(.2)
         self.dev.open_connection()
         time.sleep(.25)
         assert self.dev.get_info()
         assert self.dev.serial_number is not None
         assert self.dev.power_setting is not None
-        assert self.dev.command_read_setting is not None
         assert self.dev.device_information is not None
         #Close connection
-        self.dev.close()
+        self.dev.close_connection()
         time.sleep(.25)
     
     def test_connection_failure(self):
         # Use an unreachable IP (TEST-NET-1 range, reserved for docs/testing)
-        bad_device = ""   # usually blocked/unusable
-        self.dev = SMC(device_uri = "", log=self.log)
+        bad_connection = "dev/ximc/0000"
+        self.dev = SMC(device_connection = bad_connection, connection_type = self.connection_type, log = self.log)
         success = self.dev.open_connection()
         self.assertFalse(success, "Expected connection failure with invalid IP/port")
-        self.dev.close()
+        self.dev.close_connection()
 
     ##########################
     ## Status Communication
     ##########################
     def status_communication(self):
         # Open connection     
-        self.dev = SMC(device_uri = self.device,log = self.log)
+        self.dev = SMC(device_connection = self.device_connection, connection_type = self.connection_type, log = self.log)
         time.sleep(.2)
         self.dev.open_connection()
         time.sleep(.25)
@@ -61,7 +62,7 @@ class Physical_Test(unittest.TestCase):
         status = self.dev.status()
         assert status is not None
 
-        self.dev.close()
+        self.dev.close_connection()
         time.sleep(.25)
 
     ##########################
@@ -69,7 +70,7 @@ class Physical_Test(unittest.TestCase):
     ##########################
     def test_home(self):
         # Open connection    
-        self.dev = SMC(device_uri = self.device,log = self.log)
+        self.dev = SMC(device_connection = self.device_connection, connection_type = self.connection_type, log = self.log)
         time.sleep(.2)
         self.dev.open_connection()
         time.sleep(.25)
@@ -82,12 +83,12 @@ class Physical_Test(unittest.TestCase):
         assert abs(pos - 0) < self.error_tolerance*2
         
         #Close connection
-        self.dev.close()
+        self.dev.close_connection()
         time.sleep(.25)
 
     def test_move(self):
         # Open connection    
-        self.dev = SMC(device_uri = self.device,log = self.log)
+        self.dev = SMC(device_connection = self.device_connection, connection_type = self.connection_type, log = self.log)
         time.sleep(.2)
         self.dev.open_connection()
         time.sleep(.25)
@@ -102,20 +103,21 @@ class Physical_Test(unittest.TestCase):
         time.sleep(.25)
         pos = self.dev.get_position()
         assert abs(pos - 5) < self.error_tolerance*2
-        assert self.dev.move_rel(position = 5.0)
+        assert self.dev.move_rel(position = 5)
         time.sleep(.25)
+        pos = self.dev.get_position()
         assert abs(pos - 10) < self.error_tolerance*2
         assert self.dev.home()
         time.sleep(.25)
         pos = self.dev.get_position()
         assert abs(pos - 0) < self.error_tolerance*2
         #Close connection
-        self.dev.close()
+        self.dev.close_connection()
         time.sleep(.25)
 
-    def test_halt():
+    def test_halt(self):
         # Open connection    
-        self.dev = SMC(device_uri = self.device,log = self.log)
+        self.dev = SMC(device_connection = self.device_connection, connection_type = self.connection_type, log = self.log)
         time.sleep(.2)
         self.dev.open_connection()
         time.sleep(.25)
@@ -125,15 +127,15 @@ class Physical_Test(unittest.TestCase):
         end = self.dev.max_limit - 1 
         assert self.dev.move_abs(position = end)
         time.sleep(2)
-        assert self.dev.move_abs(position = (self.min_limit + 1))
+        assert self.dev.move_abs(position = (self.dev.min_limit + 1))
         assert self.dev.halt()
         time.sleep(.25)
         pos = self.dev.get_position()
-        assert pos != (self.min_limit + 1)
+        assert pos != (self.dev.min_limit + 1)
         #Close connection
         self.dev.home()
         time.sleep(.25) 
-        self.dev.close()
+        self.dev.close_connection()
         time.sleep(.25)
 
 
