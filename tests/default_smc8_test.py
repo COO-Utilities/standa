@@ -24,8 +24,8 @@ class Comms_Test(unittest.TestCase):
     device = ""
     log = False
     error_tolerance = 0.1
-    device_connection = '/dev/ximc/00007DF6'
-    connection_type = "serial"
+    device_connection = "192.168.29.123/9219"
+    connection_type = "xinet"
 
     ##########################
     ## TestConnection and failure connection

@@ -21,8 +21,8 @@ class Physical_Test(unittest.TestCase):
         self.device = ""
         self.log = False
         self.error_tolerance = 0.1
-        self.device_connection = '/dev/ximc/00007DF6'
-        self.connection_type = "serial"
+        self.device_connection = "192.168.29.123/9219"
+        self.connection_type = "xinet"
 
     ##########################
     ## TestConnection and failure connection
