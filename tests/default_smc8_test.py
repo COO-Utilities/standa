@@ -1,5 +1,6 @@
 #################
-#Outline Robust and Communication Tests
+#Default Communication test
+#Description: Test connection, disconnection and confirming communication with stage
 #################
 
 import pytest
