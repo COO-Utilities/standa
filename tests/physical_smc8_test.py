@@ -1,4 +1,9 @@
-
+#################
+#Functionality test
+#Description: Test connection, disconnection, confirming communication with stage,
+#               inicialization(or something similar) and movement/position query
+#               tests are successful and correct
+#################
 
 import pytest
 pytestmark = pytest.mark.functional

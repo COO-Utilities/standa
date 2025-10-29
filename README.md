@@ -17,7 +17,7 @@ Low-level Python or simplified wrapper modules to send commands to Standa contro
     from util.smc8 import SMC
 
     # Open connection examples  
-    dev = SMC(device_connection="192.123.123.112", connection_type = "tcp",log = True)
+    dev = SMC(device_connection = "192.168.31.123/9219", connection_type = "xinet", log = False)
     dev = SMC(device_connection="/dev/ximc/00007DF6", connection_type = "serial",log = True)
     dev.open_connection()
     time.sleep(.25)
@@ -52,8 +52,19 @@ Low-level Python or simplified wrapper modules to send commands to Standa contro
 ## 🧪 Testing
 Unit tests are located in `tests/` directory.
 
-To run all tests from the project root:
+TODO: Make "Mock test" for PPC102 get_position and get_status which threw errors and was removed. 
+    Assumed to be due to the byte and int convertion
 
+To run tests from the project root based on what you need:
+Software check:
 ```bash
-python -m pytest -m unit/integration/default
+pytest -m unit
+```
+Connection Test:
+```bash
+pytest -m default
+```
+Functionality Test:
+```bash
+pytest -m functional
 ```
