@@ -18,7 +18,7 @@ class TestSMC8(unittest.TestCase):
         mock_open_device = patcher.start()
         self.mock_ximc = MagicMock()
         mock_open_device.return_value = self.mock_ximc
-        self.controller = SMC(device_connection = "/dev/ximc/00007DF6", connection_type = "serial", log = False)
+        self.controller = SMC(device_connection = "192.168.29.123/9219", connection_type = "xinet", log = False)
         self.controller._axis  = self.mock_ximc
         self.controller.dev_open = True
         self.controller.min_limit = -500

@@ -21,8 +21,11 @@ class SMC(object):
         - Required Parameters:
             device_connection: str = Connection string for device
                 - Ex: serial connection: '/COM3', '/dev/ximc/000746D30' or '192.123.123.92'
+                - NOTE:: For Network you must provide IP/Name and device ID. Device ID is the 
+                            serial number tranlslated to hex
+                        EX: SMC(device_connection = "192.168.29.123/9219", connection_type="xinet")
             connection_type: str = Type of connection
-                - Options: 'serial', 'tcp', 'xinet'
+                - Options: 'serial'=USB, 'tcp'=Raw TCP, 'xinet'=Network
             log: bool = Enable or disable logging to file
     '''
 
@@ -37,7 +40,6 @@ class SMC(object):
         self.logger = logging.getLogger(logname)
         self.logger.setLevel(logging.DEBUG)
         if log:
-            self.logger.addHandler(FileHandler)
             log_handler = logging.FileHandler(logname + ".log")
             formatter = logging.Formatter(
                 "%(asctime)s--%(name)s--%(levelname)s--%(module)s--"
@@ -59,11 +61,11 @@ class SMC(object):
         self.serial_number = None
         self.power_setting = None
         self.device_information = None
-        self.engine_settings = None
+        self._engine_settings = None
         self.min_limit = None
         self.max_limit = None
-        self.homed_and_happy_bool = False
-        self.uPOSITION = 0 #Constant is 0 for DC motors and avaries for stepper motors
+        self._homed_and_happy_bool = False
+        self._uPOSITION = 0 #Constant is 0 for DC motors and avaries for stepper motors
                            #look into ximc library for details on uPOSITION 
         self.device_uri = None
 
@@ -107,9 +109,9 @@ class SMC(object):
             #open device
             self._axis.open_device()
             #get and save engine settings
-            self.engine_settings = self._axis.get_engine_settings()
+            self._engine_settings = self._axis.get_engine_settings()
             #Set calb for user units TODO:: Check if this is correct(SPECIFICALLY THE MICROSTEP MODE)
-            self._axis.set_calb(self.step_size_coeff, self.engine_settings.MicrostepMode)
+            self._axis.set_calb(self.step_size_coeff, self._engine_settings.MicrostepMode)
             #Set limits
             self.limits = self._axis.get_edges_settings()
             self.min_limit = self.limits.LeftBorder
@@ -247,7 +249,7 @@ class SMC(object):
                 self.logger.error(f"Position out of limits: {position}")
                 return False
             #move absolute
-            self._axis.command_move(position, self.uPOSITION)
+            self._axis.command_move(position, self._uPOSITION)
             #return true if succesful
             return True
         #catch error
@@ -283,7 +285,7 @@ class SMC(object):
                 self.logger.error(f"Position out of limits: {new_position}")
                 return False
             #move relative
-            self._axis.command_movr(position, self.uPOSITION)
+            self._axis.command_movr(position, self._uPOSITION)
             #return true if succesful
             return True
         #catch error
@@ -336,7 +338,7 @@ class SMC(object):
             #parse results
             #return status in user friendly way
             self.logger.info(f"Position: {status.CurPosition}")
-            self.homed_and_happy_bool = bool(status.Flags & self._state_flags.STATE_IS_HOMED |
+            self._homed_and_happy_bool = bool(status.Flags & self._state_flags.STATE_IS_HOMED |
                                                  self._state_flags.STATE_EEPROM_CONNECTED)
             return status
         #catch error
