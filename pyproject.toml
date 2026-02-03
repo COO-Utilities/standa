@@ -16,7 +16,8 @@ readme = "README.md"
 requires-python = ">=3.8"
 
 dependencies = [
-    "libximc"
+    "libximc",
+    "hardware_device_base@git+https://github.com/COO-Utilities/hardware_device_base"
 ]
 
 [project.urls]
