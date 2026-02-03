@@ -14,12 +14,13 @@ Low-level Python or simplified wrapper modules to send commands to Standa contro
 
 ### smc8.py Example
 ```python
-    from util.smc8 import SMC
+    from util.smc8 import SmcController
 
     # Open connection examples  
-    dev = SMC(device_connection = "192.168.31.123/9219", connection_type = "xinet", log = False)
-    dev = SMC(device_connection="/dev/ximc/00007DF6", connection_type = "serial",log = True)
-    dev.open_connection()
+    dev = SmcController(log = False)
+    dev.connect(device_str = "192.168.31.123/9219", connection_type = "xinet")
+    # OR
+    dev.connect(device_str="/dev/ximc/00007DF6", connection_type = "serial")
     time.sleep(.25)
     #Populates dev with device info
     dev.get_info() 
@@ -32,21 +33,21 @@ Low-level Python or simplified wrapper modules to send commands to Standa contro
     time.sleep(5) #Give time for stage to move
 
     # Query Position
-    pos = dev.get_position() # Query Position
+    pos = dev.get_pos() # Query Position
 
     # Move Relative to its current position
-    dev.move_rel(position = 5) #positive ot negative
+    dev.set_pos(position = 5) #positive ot negative
     time.sleep(5)
 
     # Move to absolute position
-    dev.move_abs(position = 10) 
+    dev.set_pos(position = 10, abs_move = False) 
     time.sleep(5)
 
     pos = dev.get_position()
     dev.home()
     time.sleep(5)
     #Close connection
-    dev.close_connection()
+    dev.disconnect()
 ```
 
 ## 🧪 Testing
