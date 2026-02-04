@@ -1,7 +1,10 @@
-#NOTE:: Pip install of libximc is needed to use the library imported
-#       These are not standard python librarys but are on PyPI
-#                       -Elijah Anakalea-Buckley
-
+'''
+    standa.smc8.py: Class for controlling Standa SMC motion controllers
+    using the libximc library.
+    NOTE:: Pip install of libximc is needed to use the library imported
+       These are not standard python librarys but are on PyPI
+                       -Elijah Anakalea-Buckley
+'''
 from typing import Tuple, Union, Dict
 import libximc.highlevel as ximc
 from hardware_device_base import HardwareMotionBase
