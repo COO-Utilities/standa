@@ -311,6 +311,8 @@ class SmcController(HardwareMotionBase):
             return: status string and variables nessesary
             libximc:: get_status()
         '''
+        #TODO:: bitmask checks for status flags instead of equality checks, add more status info to logs
+        # finish implementing status checks
         #Check if connection not open
         if not self.dev_open:
             self.report_error("Device not open, cannot get status.")
@@ -319,19 +321,19 @@ class SmcController(HardwareMotionBase):
         try:
             #get status, parse results, return status in user friendly way
             self.status = self._axis.get_status()
-            print(f"Status: {self.status}")
-            self.report_info(f"Position: {self.status.CurPosition}")
-            self._homed_and_happy_bool = True
+            #print(f"Status: {self.status}")
+            #self.report_info(f"Position: {self.status.CurPosition}")
+            #self._homed_and_happy_bool = True
             # FIX: bitmask checks instead of equality
-            if self.status.Flags & self._state_flags.STATE_EEPROM_CONNECTED:
-                self.report_info("EEPROM connected, but not homed.")
+            #if self.status.Flags & self._state_flags.STATE_EEPROM_CONNECTED:
+            #    self.report_info("EEPROM connected, but not homed.")
 
-            elif self.status.Flags & self._state_flags.STATE_IS_HOMED:
-                self.report_info("Stage is homed and ready to move.")
+            #elif self.status.Flags & self._state_flags.STATE_IS_HOMED:
+            #    self.report_info("Stage is homed and ready to move.")
 
-            else:
-                self.report_warning("Stage is not homed and may not be ready to move.")
-                self._homed_and_happy_bool = False
+            #else:
+            #    self.report_warning("Stage is not homed and may not be ready to move.")
+            #    self._homed_and_happy_bool = False
 
             return self.status
         except Exception as e: #pylint: disable=W0718
