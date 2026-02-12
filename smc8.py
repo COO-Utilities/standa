@@ -322,13 +322,17 @@ class SmcController(HardwareMotionBase):
             print(f"Status: {self.status}")
             self.report_info(f"Position: {self.status.CurPosition}")
             self._homed_and_happy_bool = True
-            if self.status.Flags == self._state_flags.STATE_EEPROM_CONNECTED:
+            # FIX: bitmask checks instead of equality
+            if self.status.Flags & self._state_flags.STATE_EEPROM_CONNECTED:
                 self.report_info("EEPROM connected, but not homed.")
-            elif self.status.Flags == self._state_flags.STATE_IS_HOMED:
+
+            elif self.status.Flags & self._state_flags.STATE_IS_HOMED:
                 self.report_info("Stage is homed and ready to move.")
+
             else:
                 self.report_warning("Stage is not homed and may not be ready to move.")
                 self._homed_and_happy_bool = False
+
             return self.status
         except Exception as e: #pylint: disable=W0718
             #log error and return false
