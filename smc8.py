@@ -384,3 +384,11 @@ class SmcController(HardwareMotionBase):
     def is_loop_closed(self) -> bool:
         """Check if the hardware motion loop is closed."""
         return True
+
+    def _send_command(self, command: str) -> bool: # pylint: disable=W0221
+        """Send a command to the hardware motion device."""
+        raise NotImplementedError("Device does not use command/reply protocol.")
+
+    def _read_reply(self) -> str:
+        """Read a reply from the hardware motion device."""
+        raise NotImplementedError("Device does not use command/reply protocol.")
