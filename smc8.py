@@ -191,7 +191,7 @@ class SmcController(HardwareMotionBase):
             #home stage,Check, and log status
             self._axis.command_homezero()
             self.report_info("home command sent successfully.")
-            self.status()
+            self.get_status()
             return True
         except Exception as e: #pylint: disable=W0718
             #log error
@@ -321,7 +321,7 @@ class SmcController(HardwareMotionBase):
             self.status = self._axis.get_status()
             self.report_info(f"Position: {self.status.CurPosition}")
             self._homed_and_happy_bool = bool(self.status.Flags & self._state_flags.STATE_IS_HOMED |
-                                                 self._state_flags.STATE_EEPROM_CONNECTED)
+                                                 self.status.Flags & self._state_flags.STATE_EEPROM_CONNECTED)
             return self.status
         except Exception as e: #pylint: disable=W0718
             #log error and return false
