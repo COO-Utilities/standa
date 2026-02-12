@@ -319,6 +319,7 @@ class SmcController(HardwareMotionBase):
         try:
             #get status, parse results, return status in user friendly way
             self.status = self._axis.get_status()
+            print(f"Status: {self.status.Flags}")
             self.report_info(f"Position: {self.status.CurPosition}")
             self._homed_and_happy_bool = True
             if self.status.Flags == self._state_flags.STATE_EEPROM_CONNECTED:
