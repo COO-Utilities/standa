@@ -43,7 +43,7 @@ Low-level Python or simplified wrapper modules to send commands to Standa contro
     dev.set_pos(position = 10, abs_move = False) 
     time.sleep(5)
 
-    pos = dev.get_position()
+    pos = dev.get_pos()
     dev.home()
     time.sleep(5)
     #Close connection
