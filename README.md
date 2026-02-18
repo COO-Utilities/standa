@@ -35,11 +35,11 @@ Low-level Python or simplified wrapper modules to send commands to Standa contro
     # Query Position
     pos = dev.get_pos() # Query Position
 
-    # Move Relative to its current position
+    # Move to absolute position
     dev.set_pos(position = 5) #positive ot negative
     time.sleep(5)
 
-    # Move to absolute position
+    # Move to position relative of its current pos
     dev.set_pos(position = 10, abs_move = False) 
     time.sleep(5)
 
