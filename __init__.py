@@ -1,3 +1,3 @@
-from .smc8 import SMC
+from .smc8 import SmcController
 
-__all__ = ["SMC"]
+__all__ = ["SmcController"]
