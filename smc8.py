@@ -172,7 +172,7 @@ class SmcController(HardwareMotionBase):
         except Exception as e: #pylint: disable=W0718
             #log error and return None
             self.report_error(f"Error getting device information: {e}")
-        return None
+        return True
 
 
     def home(self):

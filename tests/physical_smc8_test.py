@@ -27,8 +27,8 @@ class PhysicalTest(unittest.TestCase):
         self.device = ""
         self.log = False
         self.error_tolerance = 0.1
-        self.device_connection = "192.168.29.123/9219"
-        self.connection_type = "xinet"
+        self.device_connection = "/dev/tty.usbmodem000092631"
+        self.connection_type = "serial"
 
     ##########################
     ## TestConnection and failure connection
@@ -37,7 +37,7 @@ class PhysicalTest(unittest.TestCase):
         '''# Open connection'''
         self.dev = SMC()
         time.sleep(.2)
-        self.dev.connect(device_str = self.device_connection, connection_type = self.connection_type, log = self.log) # pylint: disable=C0301
+        self.dev.connect(device_str = self.device_connection, connection_type = self.connection_type) # pylint: disable=C0301
         time.sleep(.25)
         assert self.dev.get_info()
         assert self.dev.serial_number is not None
@@ -51,7 +51,7 @@ class PhysicalTest(unittest.TestCase):
         ''' Use an unreachable IP (TEST-NET-1 range, reserved for docs/testing)'''
         bad_connection = "dev/ximc/0000"
         self.dev = SMC()
-        success = self.dev.connect(device_str = bad_connection, connection_type = self.connection_type, log = self.log) # pylint: disable=C0301
+        success = self.dev.connect(device_str = bad_connection, connection_type = self.connection_type) # pylint: disable=C0301
         self.assertFalse(success, "Expected connection failure with invalid IP/port")
         self.dev.disconnect()
 
@@ -63,7 +63,7 @@ class PhysicalTest(unittest.TestCase):
         # Open connection
         self.dev = SMC()
         time.sleep(.2)
-        self.dev.connect(device_str = self.device_connection, connection_type = self.connection_type, log = self.log) # pylint: disable=C0301
+        self.dev.connect(device_str = self.device_connection, connection_type = self.connection_type) # pylint: disable=C0301
         time.sleep(.25)
         self.dev.get_info()
         status = self.dev.status()
@@ -79,10 +79,10 @@ class PhysicalTest(unittest.TestCase):
         # Open connection
         self.dev = SMC()
         time.sleep(.2)
-        self.dev.connect(device_str = self.device_connection, connection_type = self.connection_type, log = self.log) # pylint: disable=C0301
+        self.dev.connect(device_str = self.device_connection, connection_type = self.connection_type) # pylint: disable=C0301
         time.sleep(.25)
         assert self.dev.get_info()
-        status = self.dev.status()
+        status = self.dev.get_status()
         assert status is not None
         assert self.dev.home()
         time.sleep(.25)
@@ -98,10 +98,10 @@ class PhysicalTest(unittest.TestCase):
         # Open connection
         self.dev = SMC()
         time.sleep(.2)
-        self.dev.connect(device_str = self.device_connection, connection_type = self.connection_type, log = self.log) # pylint: disable=C0301
+        self.dev.connect(device_str = self.device_connection, connection_type = self.connection_type) # pylint: disable=C0301
         time.sleep(.2)
         assert self.dev.get_info()
-        status = self.dev.status()
+        status = self.dev.get_status()
         assert status is not None
         assert self.dev.home()
         time.sleep(.25)
@@ -128,10 +128,10 @@ class PhysicalTest(unittest.TestCase):
         # Open connection
         self.dev = SMC()
         time.sleep(.2)
-        self.dev.connect(device_str = self.device_connection, connection_type = self.connection_type, log = self.log) # pylint: disable=C0301
+        self.dev.connect(device_str = self.device_connection, connection_type = self.connection_type) # pylint: disable=C0301
         time.sleep(.2)
         assert self.dev.get_info()
-        status = self.dev.status()
+        status = self.dev.get_status()
         assert status is not None
         end = self.dev.max_limit - 1 
         assert self.dev.set_pos(abs_move = True,position = end)

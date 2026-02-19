@@ -9,7 +9,7 @@ import time #pylint: disable=unused-import
 import ctypes #pylint: disable=unused-import
 import pytest
 pytestmark = pytest.mark.unit
-from smc8 import SmcController as SMC #pylint: disable=C0413,E0401
+from smc8 import SmcController #pylint: disable=C0413,E0401
 
 class ComTest(unittest.TestCase):
     '''Communication Test for Standa Attenuator'''
@@ -21,17 +21,17 @@ class ComTest(unittest.TestCase):
     device = ""
     log = False
     error_tolerance = 0.1
-    device_connection = "192.168.29.123/9219"
-    connection_type = "xinet"
+    device_connection = "/dev/tty.usbmodem000092631"
+    connection_type = "serial"
 
     ##########################
     ## TestConnection and failure connection
     ##########################
     def test_connection(self):
         '''# Open connection    ''' 
-        self.dev = SMC()
+        self.dev = SmcController()
         time.sleep(.2)
-        self.dev.connect(device_str = "192.168.29.123/9219", connection_type = "xinet", log = False) # pylint: disable=C0301
+        self.dev.connect(device_str = self.device_connection, connection_type = self.connection_type) # pylint: disable=C0301
         time.sleep(.25)
         assert self.dev.get_info()
         assert self.dev.serial_number is not None
@@ -44,9 +44,9 @@ class ComTest(unittest.TestCase):
     def test_connection_failure(self):
         '''# Use an unreachable IP (TEST-NET-1 range, reserved for docs/testing)'''
         bad_connection = "dev/ximc/0000"
-        self.dev = SMC()
+        self.dev = SmcController()
         time.sleep(.2)
-        success = self.dev.connect(device_str = bad_connection, connection_type = self.connection_type, log = self.log) # pylint: disable=C0301
+        success = self.dev.connect(device_str = bad_connection, connection_type = self.connection_type) # pylint: disable=C0301
         self.assertFalse(success, "Expected connection failure with invalid IP/port")
         self.dev.disconnect()
 
@@ -55,9 +55,9 @@ class ComTest(unittest.TestCase):
     ##########################
     def status_communication(self):
         '''Status retrieval test'''
-        self.dev = SMC()
+        self.dev = SmcController()
         time.sleep(.2)
-        self.dev.connect(device_str = "192.168.29.123/9219", connection_type = "xinet", log = False) # pylint: disable=C0301
+        self.dev.connect(device_str = self.device_connection, connection_type = self.connection_type) # pylint: disable=C0301
         time.sleep(.25)
         self.dev.open_connection()
         time.sleep(.25)
