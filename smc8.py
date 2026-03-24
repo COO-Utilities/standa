@@ -57,6 +57,7 @@ class SmcController(HardwareMotionBase):
         self.dev_open = False
         self.step_size_coeff = None
         self._axis = None
+        self.axstat = None
 
     def connect(self, connection_type: str, device_str: str, step_size:float = 0.0025): # pylint: disable=W0221
         """
@@ -192,7 +193,7 @@ class SmcController(HardwareMotionBase):
             #home stage,Check, and log status
             self._axis.command_homezero()
             self.report_info("home command sent successfully.")
-            self.get_status()
+            self.get_axis_status()
             return True
         except Exception as e: #pylint: disable=W0718
             #log error
@@ -305,7 +306,7 @@ class SmcController(HardwareMotionBase):
             self.report_error(f"Error getting position: {e}")
             return None
 
-    def get_status(self):
+    def get_axis_status(self):
         """
             Gathers status and formats it in a usable and readable format.
                 mostly for logging
@@ -321,20 +322,20 @@ class SmcController(HardwareMotionBase):
 
         try:
             #get status, parse results, return status in user friendly way
-            self.status = self._axis.get_status()
-            #print(f"Status: {self.status}")
-            self.report_info(f"Position: {self.status.CurPosition}")
+            self.axstat = self._axis.get_status()
+            self.report_debug(f"Status: {self.axstat}")
+            self.report_info(f"Position: {self.axstat.CurPosition}")
             self._homed_and_happy_bool = True
             # FIX: bitmask checks instead of equality
-            if self.status.Flags & self._state_flags.STATE_EEPROM_CONNECTED:
+            if self.axstat.Flags & self._state_flags.STATE_EEPROM_CONNECTED:
                 self.report_info("EEPROM connected, but not homed.")
-            elif self.status.Flags & self._state_flags.STATE_IS_HOMED:
+            elif self.axstat.Flags & self._state_flags.STATE_IS_HOMED:
                 self.report_info("Stage is homed and ready to move.")
             else:
                 self.report_warning("Stage is not homed and may not be ready to move.")
                 self._homed_and_happy_bool = False
 
-            return self.status
+            return self.axstat
         except Exception as e: #pylint: disable=W0718
             #log error and return false
             self.report_error(f"Error getting status: {e}")
@@ -369,7 +370,7 @@ class SmcController(HardwareMotionBase):
 
     def is_homed(self) -> bool:
         """Check if the hardware motion device is homed."""
-        self.get_status()
+        self.get_axis_status()
         return self._homed_and_happy_bool
 
     def get_limits(self) -> Union[Dict[str, Tuple[float, float]], None]:
