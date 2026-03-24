@@ -10,6 +10,8 @@ import pytest
 pytestmark = pytest.mark.unit
 from smc8 import SmcController as SMC #pylint: disable=C0413,E0401
 
+pytestmark = pytest.mark.unit
+
 class TestSMC8(unittest.TestCase):
     """Unit tests for the SunpowerCryocooler class."""
 
@@ -54,7 +56,7 @@ class TestSMC8(unittest.TestCase):
         """Testing sending the correct commands to rel move the SMC."""
         mock_axis = MagicMock()
         self.controller._axis = mock_axis  # pylint: disable=protected-access
-        self.controller.get_position = MagicMock(return_value=0)
+        self.controller.get_pos = MagicMock(return_value=0)
 
         self.controller.move_rel(10)
         mock_axis.command_movr.assert_called_once_with(10,0)
@@ -68,13 +70,13 @@ class TestSMC8(unittest.TestCase):
     def test_get_position(self):
         """Test getting the position from the SMC."""
         self.controller._axis.get_position = MagicMock(return_value=self.mock_ximc) # pylint: disable=protected-access
-        pos = self.controller.get_position()
+        pos = self.controller.get_pos()
         assert pos == 10
 
     def test_get_status(self):
         """Test getting the status from the SMC."""
         self.controller._axis.get_status = MagicMock(return_value=self.mock_ximc) # pylint: disable=protected-access
-        status = self.controller.status()
+        status = self.controller.get_axis_status()
         position = status.CurPosition
         moving_speed = status.CurSpeed
         assert position is not None

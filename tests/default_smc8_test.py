@@ -11,6 +11,8 @@ import pytest
 pytestmark = pytest.mark.unit
 from smc8 import SmcController #pylint: disable=C0413,E0401
 
+pytestmark = pytest.mark.default
+
 class ComTest(unittest.TestCase):
     '''Communication Test for Standa Attenuator'''
 
@@ -21,8 +23,8 @@ class ComTest(unittest.TestCase):
     device = ""
     log = False
     error_tolerance = 0.1
-    device_connection = "/dev/tty.usbmodem000092631"
-    connection_type = "serial"
+    device_connection = "192.168.29.123/00009219"
+    connection_type = "xinet"
 
     ##########################
     ## TestConnection and failure connection
@@ -58,8 +60,6 @@ class ComTest(unittest.TestCase):
         self.dev = SmcController()
         time.sleep(.2)
         self.dev.connect(device_str = self.device_connection, connection_type = self.connection_type) # pylint: disable=C0301
-        time.sleep(.25)
-        self.dev.open_connection()
         time.sleep(.25)
         assert self.dev.get_info()
         status = self.dev.status()

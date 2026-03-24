@@ -27,8 +27,8 @@ class PhysicalTest(unittest.TestCase):
         self.device = ""
         self.log = False
         self.error_tolerance = 0.1
-        self.device_connection = "/dev/tty.usbmodem000092631"
-        self.connection_type = "serial"
+        self.device_connection = "192.168.29.123/00009219"
+        self.connection_type = "xinet"
 
     ##########################
     ## TestConnection and failure connection
@@ -66,7 +66,7 @@ class PhysicalTest(unittest.TestCase):
         self.dev.connect(device_str = self.device_connection, connection_type = self.connection_type) # pylint: disable=C0301
         time.sleep(.25)
         self.dev.get_info()
-        status = self.dev.status()
+        status = self.dev.get_axis_status()
         assert status is not None
         self.dev.disconnect()
         time.sleep(.25)
@@ -82,8 +82,6 @@ class PhysicalTest(unittest.TestCase):
         self.dev.connect(device_str = self.device_connection, connection_type = self.connection_type) # pylint: disable=C0301
         time.sleep(.25)
         assert self.dev.get_info()
-        status = self.dev.get_status()
-        assert status is not None
         assert self.dev.home()
         time.sleep(.25)
         pos = self.dev.get_pos()
@@ -101,8 +99,6 @@ class PhysicalTest(unittest.TestCase):
         self.dev.connect(device_str = self.device_connection, connection_type = self.connection_type) # pylint: disable=C0301
         time.sleep(.2)
         assert self.dev.get_info()
-        status = self.dev.get_status()
-        assert status is not None
         assert self.dev.home()
         time.sleep(.25)
         pos = self.dev.get_pos()
@@ -131,9 +127,7 @@ class PhysicalTest(unittest.TestCase):
         self.dev.connect(device_str = self.device_connection, connection_type = self.connection_type) # pylint: disable=C0301
         time.sleep(.2)
         assert self.dev.get_info()
-        status = self.dev.get_status()
-        assert status is not None
-        end = self.dev.max_limit - 1 
+        end = self.dev.max_limit - 1
         assert self.dev.set_pos(abs_move = True,position = end)
         time.sleep(2)
         goal = self.dev.min_limit + 1
