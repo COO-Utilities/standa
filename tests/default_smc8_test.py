@@ -23,7 +23,7 @@ class ComTest(unittest.TestCase):
     device = ""
     log = False
     error_tolerance = 0.1
-    device_connection = "192.168.29.123"
+    device_connection = "192.168.29.123/00009219"
     connection_type = "xinet"
 
     ##########################
@@ -60,8 +60,6 @@ class ComTest(unittest.TestCase):
         self.dev = SmcController()
         time.sleep(.2)
         self.dev.connect(device_str = self.device_connection, connection_type = self.connection_type) # pylint: disable=C0301
-        time.sleep(.25)
-        self.dev.open_connection()
         time.sleep(.25)
         assert self.dev.get_info()
         status = self.dev.status()
