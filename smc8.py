@@ -203,8 +203,9 @@ class SmcController(HardwareMotionBase):
     def set_pos(self, position:int, abs_move:bool=True): # pylint: disable=W0221
         """
             Sets the current position of the stage to a specific value.
-            - This does not move the stage, just sets the current position
+
             parameters: int:"position" to set current position to
+            abs_move: bool True for absolute move, False for relative move
             return: bool on successful or unsuccessful set position
             libximc:: set_position()
         """
@@ -389,6 +390,27 @@ class SmcController(HardwareMotionBase):
         self.report_info(f"Limits are: Min: {self.min_limit}, Max: {self.max_limit}")
         ret = {"1": (self.min_limit, self.max_limit)}
         return ret
+
+    def get_atomic_value(self, item: str = "") -> Union[float, int, str, None]:
+        """Return single value for item"""
+        if "pos" in item:
+            result = self.get_pos()
+            if result is None:
+                self.report_error("Failed to get position")
+                value = None
+            else:
+                value = int(result)
+        #elif "atten" in item:
+        #    result = self.get_attenuation()
+        #    if result is None:
+        #        self.report_error("Failed to get attenuation")
+        #        value = None
+        #    else:
+        #        value = float(result)
+        else:
+            self.report_error(f"Unknown item: {item}, choose pos or atten")
+            value = None
+        return value
 
     def close_loop(self) -> bool:
         """Close the loop for the hardware motion device."""
