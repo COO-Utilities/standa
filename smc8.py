@@ -414,8 +414,8 @@ class SmcController(HardwareMotionBase):
     def initialize(self) -> bool:
         """Initialize the hardware motion device."""
         self.get_info()
-        self.get_limits()
         self.get_axis_status()
+        self.initialized = True
         return True
 
     def close_loop(self) -> bool:
