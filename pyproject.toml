@@ -41,7 +41,3 @@ markers = [
     "unit: marks tests as unit tests",
     "functional: marks tests as functional tests",
 ]
-
-[tool.setuptools.packages.find]
-# find packages under the "standa" namespace
-include = ["smc8"]
