@@ -19,14 +19,6 @@ class SmcController(HardwareMotionBase):
         - step_size:float = 0.0025 Conversion Coefficient, Example  for
             converting steps to mm used in API, adjust as needed
         - All functions log their actions and errors to a log file
-        - Required Parameters:
-            device_str: str = Connection string for device
-                - Ex: serial connection: '/COM3', '/dev/ximc/000746D30' or '192.123.123.92'
-                - NOTE:: For Network you must provide IP/Name and device ID. Device ID is the
-                            serial number tranlslated to hex
-                        EX: SMC(device_str = "192.168.29.123/9219", connection_type="xinet")
-            connection_type: str = Type of connection
-                - Options: 'serial'=USB, 'tcp'=Raw TCP, 'xinet'=Network
             log: bool = Enable or disable logging to file
     """
 
@@ -35,15 +27,12 @@ class SmcController(HardwareMotionBase):
 
     def __init__(self, log:bool=True, logfile: str =__name__.rsplit(".", 1)[-1]):
         """
-            Inicializes the device
-            parameters: ip string, port integer, logging bool
+            Initializes the device
+            parameters: log: bool, logfile: str
             - full device capabilities will be under "self.device.<functions()>"
-
-
-            connection_type: str="serial", step_size:float = 0.0025
         """
         super().__init__(log, logfile)
-        #Inicialize variables and objects
+        # Initialize variables and objects
         self.serial_number = None
         self.power_setting = None
         self.device_information = None
@@ -51,8 +40,8 @@ class SmcController(HardwareMotionBase):
         self.min_limit = None
         self.max_limit = None
         self._homed_and_happy_bool = False
-        self._uPOSITION = 0 #Constant is 0 for DC motors and avaries for stepper motors (pylint: disable=C0103)
-                           #look into ximc library for details on uPOSITION
+        self._uPOSITION = 0 # Constant is 0 for DC motors and varies for stepper motors (pylint: disable=C0103)
+                            # look into ximc library for details on uPOSITION
         self.device_uri = None
         self.dev_open = False
         self.step_size_coeff = None
@@ -63,6 +52,15 @@ class SmcController(HardwareMotionBase):
         """
             Opens communication to the Device, gathers general information to
             store in local variables.
+
+            - Required Parameters:
+            device_str: str = Connection string for device
+                - Ex: serial connection: '/COM3', '/dev/ximc/000746D30' or '192.123.123.92'
+                - NOTE:: For Network you must provide IP/Name and device ID. Device ID is the
+                            serial number translated to hex
+                        EX: SMC(device_str = "192.168.29.123/9219", connection_type="xinet")
+            connection_type: str = Type of connection
+                - Options: 'serial'=USB, 'tcp'=Raw TCP, 'xinet'=Network
             - Reference for connecting to device
             - device_uri = r"xi-emu:///ABS_PATH/virtual_controller.bin" # Virtual device
             - device_uri = r"xi-com:\\COM111"                            # Serial port
@@ -71,15 +69,15 @@ class SmcController(HardwareMotionBase):
             return: Bool for successful or unsuccessful connection
             libximc:: open_device()
         """
-        #Check if already open
+        # Check if already open
         if self.dev_open:
             #log that device is already open
             self.report_info("Device already open, skipping open command.")
             #return true if already open
             return True
-        #try to open
+        # try to open
         try:
-            #Build device URI based on connection type
+            # Build device URI based on connection type
             connection_type = connection_type.lower().strip()
             if connection_type == "serial":
                 self.device_uri = f"xi-com://{device_str}"
@@ -93,29 +91,29 @@ class SmcController(HardwareMotionBase):
 
 
             self.step_size_coeff = step_size  # Example conversion coefficient, adjust as needed(mm)
-            #open device
+            # open device
             self._axis =ximc.Axis(self.device_uri)
             self._axis.open_device()
-            #get and save engine settings
+            # get and save engine settings
             self._engine_settings = self._axis.get_engine_settings()
-            #Set calb for user units(SPECIFICALLY THE MICROSTEP MODE)
+            # Set calb for user units(SPECIFICALLY THE MICROSTEP MODE)
             self._axis.set_calb(self.step_size_coeff, self._engine_settings.MicrostepMode)
             self.get_limits()
 
             self.report_info("Device opened successfully.")
 
-            #return true if successful
+            # return true if successful
             self.dev_open = True
         except ValueError as e:
-            #log error
+            # log error
             self.report_error(f"Error opening device: {e}")
             self.dev_open = False
         except ConnectionError as e:
-            #log error
+            # log error
             self.report_error(f"Connection error opening device: {e}")
             self.dev_open = False
         except Exception as e: #pylint: disable=W0718
-            #log error
+            # log error
             self.report_error(f"Unknown error opening device: {e}")
             self.dev_open = False
         return self.dev_open
@@ -126,20 +124,20 @@ class SmcController(HardwareMotionBase):
             return: Bool for successful or unsuccessful termination
             libximc:: close_device()
         """
-        #Check if already open
+        # Check if already open
         if not self.dev_open:
             #log that device is closed
             self.report_warning("Already disconnected from device.")
             return True
 
-        #Try to close, return result
+        # Try to close, return result
         try:
             self._axis.close_device()
             self.dev_open = False
             self.report_info("Device closed successfully.")
             return True
-        except Exception as e: #pylint: disable=W0718
-            #log error and return device still open
+        except Exception as e: # pylint: disable=W0718
+            # log error and return device still open
             self.report_error(f"Error closing device: {e}")
             self.dev_open = True
             return False
@@ -154,15 +152,15 @@ class SmcController(HardwareMotionBase):
             libximc:: get_serial_number(), get_power_setting(), command_read_settings(),
                       get_device_information()
         """
-        #Check if connection not open
+        # Check if connection not open
         if not self.dev_open:
-            #log closed connection
+            # log closed connection
             self.report_error("Device not open, cannot get info.")
             return False
 
-        #Try to get info
+        # Try to get info
         try:
-            #get serial number, power settings, device information
+            # get serial number, power settings, device information
             self.serial_number = self._axis.get_serial_number()
             self.power_setting = self._axis.get_power_settings()
             self.device_information = self._axis.get_device_information()
@@ -172,8 +170,9 @@ class SmcController(HardwareMotionBase):
             self.report_info(f"Power setting: {self.power_setting}")
             self.report_info(f"Device information: {self.device_information}")
         except Exception as e: #pylint: disable=W0718
-            #log error and return None
+            # log error and return None
             self.report_error(f"Error getting device information: {e}")
+            return False
         return True
 
 
@@ -184,19 +183,19 @@ class SmcController(HardwareMotionBase):
             return: bool on successful home
             libximc:: command_homezero()
         """
-        #Check if connection not open
+        # Check if connection not open
         if not self.dev_open:
             self.report_error("Device not open, cannot home stage.")
             return False
 
         try:
-            #home stage,Check, and log status
+            # home stage,Check, and log status
             self._axis.command_homezero()
             self.report_info("home command sent successfully.")
             self.get_axis_status()
             return True
         except Exception as e: #pylint: disable=W0718
-            #log error
+            # log error
             self.report_error(f"Error homing stage: {e}")
             return False
 
@@ -209,13 +208,13 @@ class SmcController(HardwareMotionBase):
             return: bool on successful or unsuccessful set position
             libximc:: set_position()
         """
-        #Check if connection not open
+        # Check if connection not open
         if not self.dev_open:
             self.report_error("Device not open, cannot set position.")
             return False
 
         try:
-            #set position, return true if succesful
+            # set position, return true if succesful
             if abs_move:
                 self.report_info("Setting position with absolute move.")
                 self.move_abs(position)
@@ -226,7 +225,7 @@ class SmcController(HardwareMotionBase):
                 self.report_info(f"Position moved by: {position}")
             return True
         except Exception as e: #pylint: disable=W0718
-            #log error and return false
+            # log error and return false
             self.report_error(f"Error setting position: {e}")
             return False
 
@@ -239,20 +238,20 @@ class SmcController(HardwareMotionBase):
             return: bool on successful or unsuccessful absolute move
             libximc:: command_move()
         """
-        #Check if connection not open
+        # Check if connection not open
         if not self.dev_open:
             self.report_error("Device not open, cannot move stage.")
             return False
 
         try:
-            #check limits/valid inputs
+            # check limits/valid inputs
             if position < self.min_limit or position > self.max_limit:
                 self.report_error(f"Position out of limits: {position}")
                 return False
             self._axis.command_move(position, self._uPOSITION)
             return True
         except Exception as e: #pylint: disable=W0718
-            #log error and return false
+            # log error and return false
             self.report_error(f"Error moving stage: {e}")
             return False
 
@@ -265,24 +264,24 @@ class SmcController(HardwareMotionBase):
             return: bool on successful or unsuccessful relative move
             libximc:: command_movr()
         """
-        #Check if connection not open
+        # Check if connection not open
         if not self.dev_open:
             self.report_error("Device not open, cannot move stage.")
             return False
 
         try:
-            #check limits/valid inputs
-            #get current position, calculate new position, check limits
+            # check limits/valid inputs
+            # get current position, calculate new position, check limits
             current_position = self.get_pos()
             new_position = current_position + position
             if new_position < self.min_limit or new_position > self.max_limit:
                 self.report_error(f"Position out of limits: {new_position}")
                 return False
-            #move relative
+            # move relative
             self._axis.command_movr(position, self._uPOSITION)
             return True
         except Exception as e: #pylint: disable=W0718
-            #log error and return false
+            # log error and return false
             self.report_error(f"Error moving stage: {e}")
             return False
 
@@ -292,18 +291,18 @@ class SmcController(HardwareMotionBase):
             return: position in stage specific units
             libximc::
         """
-        #Check if connection not open
+        # Check if connection not open
         if not self.dev_open:
             self.report_error("Device not open, cannot get position.")
             return False
 
         try:
-            #get position
+            # get position
             pos = self._axis.get_position()
             self.report_info(f"Current position: {pos.Position}")
             return pos.Position
         except Exception as e: #pylint: disable=W0718
-            #log error and return None
+            # log error and return None
             self.report_error(f"Error getting position: {e}")
             return None
 
@@ -316,13 +315,13 @@ class SmcController(HardwareMotionBase):
         """
         # TODO: bitmask checks for status flags instead of equality checks, add more status info
         #  to logs finish implementing status checks
-        #Check if connection not open
+        # Check if connection not open
         if not self.dev_open:
             self.report_error("Device not open, cannot get status.")
             return False
 
         try:
-            #get status, parse results, return status in user friendly way
+            # get status, parse results, return status in user-friendly way
             self.axstat = self._axis.get_status()
             self.report_debug(f"Status: {self.axstat}")
             self.report_info(f"Position: {self.axstat.CurPosition}")
@@ -337,10 +336,10 @@ class SmcController(HardwareMotionBase):
                 self._homed_and_happy_bool = False
 
             return self.axstat
-        except Exception as e: #pylint: disable=W0718
-            #log error and return false
+        except Exception as e: # pylint: disable=W0718
+            # log error and return false
             self.report_error(f"Error getting status: {e}")
-            return None
+            return False
 
     def halt(self):
         """
@@ -349,23 +348,23 @@ class SmcController(HardwareMotionBase):
             return: status of the stage(log and/or print hald command called)
             libximc:: command_stop()
         """
-        #Check if connection not open
+        # Check if connection not open
         if not self.dev_open:
             self.report_error("Device not open, cannot halt stage.")
             return False
 
         try:
-            #imidiate stop, check status, recurse
+            # immediate stop, check status, recurse
             self._axis.command_stop()
             status = self._axis.get_status()
             if status.MvCmdSts != self._move_cmd_flags.MVCMD_STOP:
                 self.halt()  #Recursively call halt if not stopped
 
-            #status.Moving
+            # status.Moving
             self.report_info("Stage halted successfully.")
             return True
         except Exception as e: #pylint: disable=W0718
-            #log error and return false
+            # log error and return false
             self.report_error(f"Error halting stage: {e}")
             return False
 
@@ -383,7 +382,7 @@ class SmcController(HardwareMotionBase):
         e.g.: {"1": (1, 6)} - for a filter wheel
 
         """
-        #Set limits
+        # Set limits
         limits = self._axis.get_edges_settings()
         self.min_limit = limits.LeftBorder
         self.max_limit = limits.RightBorder
