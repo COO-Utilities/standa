@@ -14,40 +14,47 @@ Low-level Python or simplified wrapper modules to send commands to Standa contro
 
 ### smc8.py Example
 ```python
-    from util.smc8 import SmcController
+import time
+from smc8 import SmcController
 
-    # Open connection examples  
-    dev = SmcController(log = False)
-    dev.connect(device_str = "192.168.31.123/9219", connection_type = "xinet")
-    # OR
-    dev.connect(device_str="/dev/ximc/00007DF6", connection_type = "serial")
-    time.sleep(.25)
-    #Populates dev with device info
-    dev.get_info() 
+# Open connection examples  
+dev = SmcController(log = False)
+dev.connect(device_str = "192.168.31.123/9219", connection_type = "xinet")
+# OR
+dev.connect(device_str="/dev/ximc/00007DF6", connection_type = "serial")
+time.sleep(.25)
+# Initialize dev instance
+dev.initialize() 
 
-    # checks status
-    status = dev.status() 
+# checks status
+status = dev.status() 
 
-    # Homes device
-    dev.home() 
-    time.sleep(5) #Give time for stage to move
+# Homes device
+dev.home() 
+time.sleep(5) #Give time for stage to move
 
-    # Query Position
-    pos = dev.get_pos() # Query Position
+# Query Position
+pos = dev.get_pos() # Query Position
 
-    # Move to absolute position
-    dev.set_pos(position = 5) #positive ot negative
-    time.sleep(5)
+# Move to absolute position
+dev.set_pos(position = 5) #positive ot negative
+time.sleep(5)
 
-    # Move to position relative of its current pos
-    dev.set_pos(position = 10, abs_move = False) 
-    time.sleep(5)
+# Move to position relative of its current pos
+dev.set_pos(position = 10, abs_move = False) 
+time.sleep(5)
 
-    pos = dev.get_pos()
-    dev.home()
-    time.sleep(5)
-    #Close connection
-    dev.disconnect()
+# Perform absolute move
+dev.move_abs(100)
+
+# Perform relative move
+dev.move_rel(-20)
+
+print(dev.get_pos())   # Should be 80
+dev.home()
+time.sleep(5)
+#Close connection
+dev.disconnect()
 ```
 
 ## 🧪 Testing

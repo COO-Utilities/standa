@@ -5,7 +5,7 @@
        These are not standard python librarys but are on PyPI
                        -Elijah Anakalea-Buckley
 """
-from typing import Tuple, Union, Dict
+from typing import Tuple, Union, Dict, Any
 import libximc.highlevel as ximc
 from hardware_device_base import HardwareMotionBase
 
@@ -344,7 +344,7 @@ class SmcController(HardwareMotionBase):
 
     def halt(self):
         """
-            IMMITATELY halts the stage, no matter the status or if moving, stage
+            IMMEDIATELY halts the stage, no matter the status or if moving, stage
                 stops(for safety purposes)
             return: status of the stage(log and/or print hald command called)
             libximc:: command_stop()
@@ -374,7 +374,7 @@ class SmcController(HardwareMotionBase):
         self.get_axis_status()
         return self._homed_and_happy_bool
 
-    def get_limits(self) -> Union[Dict[str, Tuple[float, float]], None]:
+    def get_limits(self) -> Union[Dict[str, Tuple[Any, Any]], None]:
         """
         Get the limits of the hardware motion device.
 
@@ -411,6 +411,13 @@ class SmcController(HardwareMotionBase):
             self.report_error(f"Unknown item: {item}, choose pos or atten")
             value = None
         return value
+
+    def initialize(self) -> bool:
+        """Initialize the hardware motion device."""
+        self.get_info()
+        self.get_limits()
+        self.get_axis_status()
+        return True
 
     def close_loop(self) -> bool:
         """Close the loop for the hardware motion device."""
