@@ -10,14 +10,6 @@ import libximc.highlevel as ximc
 import numpy as np
 from hardware_device_base import HardwareMotionBase
 
-def atten_to_pos(atten: float) -> int:
-    """Convert attenuation to standa position"""
-    return int(1000.0 * (np.sqrt(-0.5 * np.log(1 - 10**(-atten / 10.0))) - 1.0))
-
-def pos_to_atten(pos: int) -> float:
-    """Convert standa position to attenuation"""
-    return float(-10 * np.log10(1 - np.exp(-2 * ((pos / 1000) + 1)**2)))
-
 # pylint: disable=too-many-instance-attributes
 class SmcController(HardwareMotionBase):
     """
@@ -56,6 +48,23 @@ class SmcController(HardwareMotionBase):
         self.step_size_coeff = None
         self._axis = None
         self.axstat = None
+
+    def atten_to_pos(self, atten: float) -> int:
+        """Convert attenuation to standa position"""
+        lval = 1.0 - 10 ** (-atten / 10.0)
+        if lval <= 0:
+            return self.max_limit
+        return int(1000.0 * (np.sqrt(-0.5 * np.log(lval)) - 1.0))
+
+    def pos_to_atten(self, pos: int) -> float:
+        """Convert standa position to attenuation"""
+        if pos < self.min_limit:
+            self.report_warning(f"Position {pos} below limit, return max attenuation ")
+            return 40.0
+        if pos > self.max_limit:
+            self.report_warning(f"Position {pos} above limit, return min attenuation ")
+            return 0.0
+        return float(-10 * np.log10(1 - np.exp(-2 * ((pos / 1000) + 1) ** 2)))
 
     def connect(self, connection_type: str, device_str: str, step_size:float = 0.0025): # pylint: disable=W0221
         """
@@ -219,7 +228,7 @@ class SmcController(HardwareMotionBase):
         if atten is None or atten < 0.0 or atten > 40.0:
             self.report_error(f"Invalid attenuation: {atten}, cannot be < 0. or > 40.")
             return False
-        standa_pos = atten_to_pos(atten)
+        standa_pos = self.atten_to_pos(atten)
         if standa_pos < self.min_limit:
             self.report_warning(f"{standa_pos} is below limit, setting attenuation to limit.")
             self.set_pos(self.min_limit)
@@ -326,7 +335,7 @@ class SmcController(HardwareMotionBase):
         # Check if connection not open
         if not self.dev_open:
             self.report_error("Device not open, cannot get position.")
-            return False
+            return None
 
         try:
             # get position
@@ -341,8 +350,8 @@ class SmcController(HardwareMotionBase):
     def get_attenuation(self):
         """ Gets Attenuation of stage """
         pos = self.get_pos()
-        if pos:
-            return pos_to_atten(int(pos))
+        if pos is not None:
+            return self.pos_to_atten(int(pos))
         return None
 
     def get_axis_status(self):
