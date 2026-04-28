@@ -438,13 +438,13 @@ class SmcController(HardwareMotionBase):
                 value = None
             else:
                 value = int(result)
-        #elif "atten" in item:
-        #    result = self.get_attenuation()
-        #    if result is None:
-        #        self.report_error("Failed to get attenuation")
-        #        value = None
-        #    else:
-        #        value = float(result)
+        elif "atten" in item:
+            result = self.get_attenuation()
+            if result is None:
+                self.report_error("Failed to get attenuation")
+                value = None
+            else:
+                value = float(result)
         else:
             self.report_error(f"Unknown item: {item}, choose pos or atten")
             value = None
