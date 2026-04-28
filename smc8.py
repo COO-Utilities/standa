@@ -7,7 +7,16 @@
 """
 from typing import Tuple, Union, Dict, Any
 import libximc.highlevel as ximc
+import numpy as np
 from hardware_device_base import HardwareMotionBase
+
+def atten_to_pos(atten: float) -> int:
+    """Convert attenuation to standa position"""
+    return int(1000.0 * (np.sqrt(-0.5 * np.log(1 - 10**(-atten / 10.0))) - 1.0))
+
+def pos_to_atten(pos: int) -> float:
+    """Convert standa position to attenuation"""
+    return -10 * np.log10(1 - np.exp(-2 * ((pos / 1000) + 1)**2))
 
 # pylint: disable=too-many-instance-attributes
 class SmcController(HardwareMotionBase):
@@ -199,6 +208,29 @@ class SmcController(HardwareMotionBase):
             self.report_error(f"Error homing stage: {e}")
             return False
 
+    def set_attenuation(self, atten: float=None) -> bool:
+        """
+                Move stage to input attenuation and return when in position
+
+                :param atten: Float, absolute attenuation in dB (0. - 40.)
+                :return: True if successful, False otherwise
+                """
+        # check attenuation limits
+        if atten is None or atten < 0.0 or atten > 40.0:
+            self.report_error(f"Invalid attenuation: {atten}, cannot be < 0. or > 40.")
+            return False
+        standa_pos = atten_to_pos(atten)
+        if standa_pos < self.min_limit:
+            self.report_warning(f"{standa_pos} is below of limit, setting attenuation to limit.")
+            self.set_pos(self.min_limit)
+        elif standa_pos > self.max_limit:
+            self.report_warning(f"{standa_pos} is above limit, setting attenuation to limit.")
+            self.set_pos(self.max_limit)
+        else:
+            self.report_info(f"Setting attenuation to {atten}, position set to {standa_pos}.")
+            self.set_pos(standa_pos)
+        return True
+
     def set_pos(self, position:int, abs_move:bool=True): # pylint: disable=W0221
         """
             Sets the current position of the stage to a specific value.
@@ -305,6 +337,13 @@ class SmcController(HardwareMotionBase):
             # log error and return None
             self.report_error(f"Error getting position: {e}")
             return None
+
+    def get_attenuation(self):
+        """ Gets Attenuation of stage """
+        pos = self.get_pos()
+        if pos:
+            return pos_to_atten(int(pos))
+        return None
 
     def get_axis_status(self):
         """
