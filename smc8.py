@@ -16,7 +16,7 @@ def atten_to_pos(atten: float) -> int:
 
 def pos_to_atten(pos: int) -> float:
     """Convert standa position to attenuation"""
-    return -10 * np.log10(1 - np.exp(-2 * ((pos / 1000) + 1)**2))
+    return float(-10 * np.log10(1 - np.exp(-2 * ((pos / 1000) + 1)**2)))
 
 # pylint: disable=too-many-instance-attributes
 class SmcController(HardwareMotionBase):
@@ -221,7 +221,7 @@ class SmcController(HardwareMotionBase):
             return False
         standa_pos = atten_to_pos(atten)
         if standa_pos < self.min_limit:
-            self.report_warning(f"{standa_pos} is below of limit, setting attenuation to limit.")
+            self.report_warning(f"{standa_pos} is below limit, setting attenuation to limit.")
             self.set_pos(self.min_limit)
         elif standa_pos > self.max_limit:
             self.report_warning(f"{standa_pos} is above limit, setting attenuation to limit.")
