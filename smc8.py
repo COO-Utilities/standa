@@ -7,6 +7,7 @@
 """
 from typing import Tuple, Union, Dict, Any
 import libximc.highlevel as ximc
+import numpy as np
 from hardware_device_base import HardwareMotionBase
 
 # pylint: disable=too-many-instance-attributes
@@ -47,6 +48,23 @@ class SmcController(HardwareMotionBase):
         self.step_size_coeff = None
         self._axis = None
         self.axstat = None
+
+    def atten_to_pos(self, atten: float) -> int:
+        """Convert attenuation to standa position"""
+        lval = 1.0 - 10 ** (-atten / 10.0)
+        if lval <= 0:
+            return self.max_limit
+        return int(1000.0 * (np.sqrt(-0.5 * np.log(lval)) - 1.0))
+
+    def pos_to_atten(self, pos: int) -> float:
+        """Convert standa position to attenuation"""
+        if pos < self.min_limit:
+            self.report_warning(f"Position {pos} below limit, return max attenuation ")
+            return 40.0
+        if pos > self.max_limit:
+            self.report_warning(f"Position {pos} above limit, return min attenuation ")
+            return 0.0
+        return float(-10 * np.log10(1 - np.exp(-2 * ((pos / 1000) + 1) ** 2)))
 
     def connect(self, connection_type: str, device_str: str, step_size:float = 0.0025): # pylint: disable=W0221
         """
@@ -199,6 +217,29 @@ class SmcController(HardwareMotionBase):
             self.report_error(f"Error homing stage: {e}")
             return False
 
+    def set_attenuation(self, atten: float=None) -> bool:
+        """
+                Move stage to input attenuation and return when in position
+
+                :param atten: Float, absolute attenuation in dB (0. - 40.)
+                :return: True if successful, False otherwise
+                """
+        # check attenuation limits
+        if atten is None or atten < 0.0 or atten > 40.0:
+            self.report_error(f"Invalid attenuation: {atten}, cannot be < 0. or > 40.")
+            return False
+        standa_pos = self.atten_to_pos(atten)
+        if standa_pos < self.min_limit:
+            self.report_warning(f"{standa_pos} is below limit, setting attenuation to limit.")
+            self.set_pos(self.min_limit)
+        elif standa_pos > self.max_limit:
+            self.report_warning(f"{standa_pos} is above limit, setting attenuation to limit.")
+            self.set_pos(self.max_limit)
+        else:
+            self.report_info(f"Setting attenuation to {atten}, position set to {standa_pos}.")
+            self.set_pos(standa_pos)
+        return True
+
     def set_pos(self, position:int, abs_move:bool=True): # pylint: disable=W0221
         """
             Sets the current position of the stage to a specific value.
@@ -294,7 +335,7 @@ class SmcController(HardwareMotionBase):
         # Check if connection not open
         if not self.dev_open:
             self.report_error("Device not open, cannot get position.")
-            return False
+            return None
 
         try:
             # get position
@@ -305,6 +346,13 @@ class SmcController(HardwareMotionBase):
             # log error and return None
             self.report_error(f"Error getting position: {e}")
             return None
+
+    def get_attenuation(self):
+        """ Gets Attenuation of stage """
+        pos = self.get_pos()
+        if pos is not None:
+            return self.pos_to_atten(int(pos))
+        return None
 
     def get_axis_status(self):
         """
@@ -399,13 +447,13 @@ class SmcController(HardwareMotionBase):
                 value = None
             else:
                 value = int(result)
-        #elif "atten" in item:
-        #    result = self.get_attenuation()
-        #    if result is None:
-        #        self.report_error("Failed to get attenuation")
-        #        value = None
-        #    else:
-        #        value = float(result)
+        elif "atten" in item:
+            result = self.get_attenuation()
+            if result is None:
+                self.report_error("Failed to get attenuation")
+                value = None
+            else:
+                value = float(result)
         else:
             self.report_error(f"Unknown item: {item}, choose pos or atten")
             value = None
