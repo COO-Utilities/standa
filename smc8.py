@@ -66,7 +66,8 @@ class SmcController(HardwareMotionBase):
             return 0.0
         return float(-10 * np.log10(1 - np.exp(-2 * ((pos / 1000) + 1) ** 2)))
 
-    def connect(self, connection_type: str, device_str: str, step_size:float = 0.0025): # pylint: disable=W0221
+    def connect(self, device_str: str, device_port: int, connection_type:str = "xinet",
+                step_size:float = 0.0025): # pylint: disable=W0221
         """
             Opens communication to the Device, gathers general information to
             store in local variables.
@@ -77,13 +78,14 @@ class SmcController(HardwareMotionBase):
                 - NOTE:: For Network you must provide IP/Name and device ID. Device ID is the
                             serial number translated to hex
                         EX: SMC(device_str = "192.168.29.123/9219", connection_type="xinet")
+            device_port: int = port number (not used for this device)
             connection_type: str = Type of connection
                 - Options: 'serial'=USB, 'tcp'=Raw TCP, 'xinet'=Network
             - Reference for connecting to device
             - device_uri = r"xi-emu:///ABS_PATH/virtual_controller.bin" # Virtual device
-            - device_uri = r"xi-com:\\COM111"                            # Serial port
-            - device_uri = "xi-tcp://172.16.130.155:1820"               # Raw TCP connection
-            - device_uri = "xi-net://192.168.1.120/abcd"                # XiNet connection
+            - device_uri = r"xi-com:\\COM111"                           # Serial port
+            - device_uri = "xi-tcp://172.16.130.155:1820"               # Raw TCP
+            - device_uri = "xi-net://192.168.1.120/abcd"                # XiNet (default)
             return: Bool for successful or unsuccessful connection
             libximc:: open_device()
         """
@@ -93,6 +95,8 @@ class SmcController(HardwareMotionBase):
             self.report_info("Device already open, skipping open command.")
             #return true if already open
             return True
+        # For compatability with other devices
+        _ = device_port
         # try to open
         try:
             # Build device URI based on connection type
