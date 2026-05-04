@@ -70,7 +70,7 @@ class SmcController(HardwareMotionBase):
         if pos > self.max_limit:
             self.report_warning(f"Position {pos} above limit, return min attenuation ")
             return 0.0
-        return float(-10.0 * CF_F * np.log10(CF_A - np.exp(-2 * ((pos / CF_C) - CF_D) ** 2)))
+        return float(-10.0 * CF_F * np.log10(CF_A - np.exp(-2 * ((pos / CF_C) - CF_D) ** 2)) + CF_G)
 
     def connect(self, device_str: str, device_port: int, connection_type:str = "xinet",
                 step_size:float = 0.0025): # pylint: disable=W0221
