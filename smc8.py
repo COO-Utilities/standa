@@ -10,6 +10,12 @@ import libximc.highlevel as ximc
 import numpy as np
 from hardware_device_base import HardwareMotionBase
 
+CF_A = 1.0017
+CF_C = -619.3
+CF_D = 1.5913
+CF_F = 1.5243
+CF_G = 0.01212
+
 # pylint: disable=too-many-instance-attributes
 class SmcController(HardwareMotionBase):
     """
@@ -51,10 +57,10 @@ class SmcController(HardwareMotionBase):
 
     def atten_to_pos(self, atten: float) -> int:
         """Convert attenuation to standa position"""
-        lval = 1.0 - 10 ** (-atten / 10.0)
+        lval = CF_A - 10 ** -((atten - CF_G) / (10.0 * CF_F))
         if lval <= 0:
             return self.max_limit
-        return int(1000.0 * (np.sqrt(-0.5 * np.log(lval)) - 1.0))
+        return int(CF_C * (CF_D - np.sqrt(-0.5 * np.log(lval))))
 
     def pos_to_atten(self, pos: int) -> float:
         """Convert standa position to attenuation"""
@@ -64,7 +70,7 @@ class SmcController(HardwareMotionBase):
         if pos > self.max_limit:
             self.report_warning(f"Position {pos} above limit, return min attenuation ")
             return 0.0
-        return float(-10 * np.log10(1 - np.exp(-2 * ((pos / 1000) + 1) ** 2)))
+        return float(-10.0 * CF_F * np.log10(CF_A - np.exp(-2 * ((pos / CF_C) - CF_D) ** 2)))
 
     def connect(self, device_str: str, device_port: int, connection_type:str = "xinet",
                 step_size:float = 0.0025): # pylint: disable=W0221
