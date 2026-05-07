@@ -72,8 +72,9 @@ class SmcController(HardwareMotionBase):
             return 0.0
         return float(-10.0 * CF_F * np.log10(CF_A - np.exp(-2 * ((pos / CF_C) - CF_D) ** 2)) + CF_G)
 
+    # pylint: disable=W0221
     def connect(self, device_str: str, device_port: int, connection_type:str = "xinet",
-                step_size:float = 0.0025): # pylint: disable=W0221
+                step_size:float = 0.0025):
         """
             Opens communication to the Device, gathers general information to
             store in local variables.
