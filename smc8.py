@@ -50,7 +50,7 @@ class SmcController(HardwareMotionBase):
         self._uPOSITION = 0 # Constant is 0 for DC motors and varies for stepper motors (pylint: disable=C0103)
                             # look into ximc library for details on uPOSITION
         self.device_uri = None
-        self.dev_open = False
+        self.connected = False
         self.step_size_coeff = None
         self._axis = None
         self.axstat = None
@@ -96,7 +96,7 @@ class SmcController(HardwareMotionBase):
             libximc:: open_device()
         """
         # Check if already open
-        if self.dev_open:
+        if self.connected:
             #log that device is already open
             self.report_info("Device already open, skipping open command.")
             #return true if already open
@@ -131,20 +131,20 @@ class SmcController(HardwareMotionBase):
             self.report_info("Device opened successfully.")
 
             # return true if successful
-            self.dev_open = True
+            self.connected = True
         except ValueError as e:
             # log error
             self.report_error(f"Error opening device: {e}")
-            self.dev_open = False
+            self.connected = False
         except ConnectionError as e:
             # log error
             self.report_error(f"Connection error opening device: {e}")
-            self.dev_open = False
+            self.connected = False
         except Exception as e: #pylint: disable=W0718
             # log error
             self.report_error(f"Unknown error opening device: {e}")
-            self.dev_open = False
-        return self.dev_open
+            self.connected = False
+        return self.connected
 
     def disconnect(self):
         """
@@ -153,7 +153,7 @@ class SmcController(HardwareMotionBase):
             libximc:: close_device()
         """
         # Check if already open
-        if not self.dev_open:
+        if not self.connected:
             #log that device is closed
             self.report_warning("Already disconnected from device.")
             return True
@@ -161,13 +161,13 @@ class SmcController(HardwareMotionBase):
         # Try to close, return result
         try:
             self._axis.close_device()
-            self.dev_open = False
+            self.connected = False
             self.report_info("Device closed successfully.")
             return True
         except Exception as e: # pylint: disable=W0718
             # log error and return device still open
             self.report_error(f"Error closing device: {e}")
-            self.dev_open = True
+            self.connected = True
             return False
 
     def get_info(self):
@@ -181,7 +181,7 @@ class SmcController(HardwareMotionBase):
                       get_device_information()
         """
         # Check if connection not open
-        if not self.dev_open:
+        if not self.connected:
             # log closed connection
             self.report_error("Device not open, cannot get info.")
             return False
@@ -212,7 +212,7 @@ class SmcController(HardwareMotionBase):
             libximc:: command_homezero()
         """
         # Check if connection not open
-        if not self.dev_open:
+        if not self.connected:
             self.report_error("Device not open, cannot home stage.")
             return False
 
@@ -260,7 +260,7 @@ class SmcController(HardwareMotionBase):
             libximc:: set_position()
         """
         # Check if connection not open
-        if not self.dev_open:
+        if not self.connected:
             self.report_error("Device not open, cannot set position.")
             return False
 
@@ -290,7 +290,7 @@ class SmcController(HardwareMotionBase):
             libximc:: command_move()
         """
         # Check if connection not open
-        if not self.dev_open:
+        if not self.connected:
             self.report_error("Device not open, cannot move stage.")
             return False
 
@@ -316,7 +316,7 @@ class SmcController(HardwareMotionBase):
             libximc:: command_movr()
         """
         # Check if connection not open
-        if not self.dev_open:
+        if not self.connected:
             self.report_error("Device not open, cannot move stage.")
             return False
 
@@ -343,7 +343,7 @@ class SmcController(HardwareMotionBase):
             libximc::
         """
         # Check if connection not open
-        if not self.dev_open:
+        if not self.connected:
             self.report_error("Device not open, cannot get position.")
             return None
 
@@ -374,7 +374,7 @@ class SmcController(HardwareMotionBase):
         # TODO: bitmask checks for status flags instead of equality checks, add more status info
         #  to logs finish implementing status checks
         # Check if connection not open
-        if not self.dev_open:
+        if not self.connected:
             self.report_error("Device not open, cannot get status.")
             return False
 
@@ -407,7 +407,7 @@ class SmcController(HardwareMotionBase):
             libximc:: command_stop()
         """
         # Check if connection not open
-        if not self.dev_open:
+        if not self.connected:
             self.report_error("Device not open, cannot halt stage.")
             return False
 
