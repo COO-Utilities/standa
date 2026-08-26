@@ -17,7 +17,7 @@ requires-python = ">=3.8"
 
 dependencies = [
     "libximc",
-    "hardware_device_base@git+https://github.com/COO-Utilities/hardware_device_base"
+    "hardware_device_base@git+https://github.com/COO-Utilities/hardware_device_base@v1.0.0"
 ]
 
 [project.urls]
